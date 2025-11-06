@@ -1,0 +1,372 @@
+/* client/src/styles/StickerGenerator.css */
+/* Styles for the Sticker Generator page */
+
+.sticker-generator-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    padding: 2rem;
+}
+
+/* Generator header */
+.generator-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    color: #2c3e50;
+}
+
+.generator-header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.generator-header p {
+    font-size: 1.2rem;
+    color: #7f8c8d;
+    margin-top: 0.5rem;
+}
+
+/* Generator container */
+.generator-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+/* Form section */
+.form-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.form-section h2 {
+    color: #2c3e50;
+    margin: 0 0 1.5rem 0;
+    font-size: 1.8rem;
+}
+
+.project-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Form groups */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 0.95rem;
+}
+
+.form-group input {
+    padding: 0.875rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-group input::placeholder {
+    color: #bdc3c7;
+}
+
+/* Mad Libs section */
+.mad-libs-section {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin: 1rem 0;
+}
+
+.mad-libs-section h3 {
+    margin: 0 0 1rem 0;
+    color: #2c3e50;
+    font-size: 1.2rem;
+}
+
+.mad-libs-section p {
+    color: #7f8c8d;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.mad-libs-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.mad-libs-row span {
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.mad-lib-select {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 150px;
+}
+
+.mad-lib-select:hover {
+    border-color: #667eea;
+}
+
+.mad-lib-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* File upload area */
+.file-upload-area {
+    border: 3px dashed #e0e0e0;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.file-upload-area:hover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.upload-icon {
+    font-size: 3rem;
+}
+
+.upload-placeholder p {
+    color: #7f8c8d;
+    margin: 0;
+}
+
+.preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+/* Form actions */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.preview-button,
+.submit-button {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.preview-button {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #2c3e50;
+}
+
+.preview-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(168, 237, 234, 0.3);
+}
+
+.submit-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.submit-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.preview-button:disabled,
+.submit-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Preview section */
+.preview-section {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: sticky;
+    top: 2rem;
+    max-height: calc(100vh - 4rem);
+}
+
+.preview-section h2 {
+    color: #2c3e50;
+    margin: 0 0 2rem 0;
+    font-size: 1.8rem;
+}
+
+.sticker-preview {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    flex: 1;
+}
+
+.sticker-placeholder {
+    text-align: center;
+    color: #7f8c8d;
+}
+
+.placeholder-emoji {
+    font-size: 5rem;
+    display: block;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.sticker-placeholder p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+/* Download button */
+.download-button {
+    margin-top: 2rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.download-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(245, 87, 108, 0.3);
+}
+
+/* Success message */
+.success-message {
+    margin-top: 2rem;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.success-emoji {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.success-message h3 {
+    margin: 0.5rem 0;
+    font-size: 1.5rem;
+}
+
+.success-message p {
+    margin: 0.5rem 0 0 0;
+    opacity: 0.95;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+    .generator-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .preview-section {
+        position: static;
+        max-height: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .sticker-generator-page {
+        padding: 1rem;
+    }
+    
+    .generator-header h1 {
+        font-size: 2rem;
+    }
+    
+    .form-section,
+    .preview-section {
+        padding: 1.5rem;
+    }
+    
+    .mad-libs-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .mad-lib-select {
+        width: 100%;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+

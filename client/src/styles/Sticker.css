@@ -1,0 +1,310 @@
+/* client/src/styles/Sticker.css */
+/* Styles for the fruit sticker component */
+
+.sticker {
+    --sticker-color: #FF6B6B;
+    width: 280px;
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    position: relative;
+    font-family: 'Arial', sans-serif;
+    transition: transform 0.3s ease;
+}
+
+.sticker:hover {
+    transform: scale(1.05) rotate(2deg);
+}
+
+.sticker-border {
+    border: 3px solid var(--sticker-color);
+    border-radius: 15px;
+    padding: 1rem;
+    position: relative;
+}
+
+/* Sticker header */
+.sticker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--sticker-color);
+}
+
+.fresh-text {
+    font-weight: 800;
+    font-size: 0.75rem;
+    color: var(--sticker-color);
+    letter-spacing: 1px;
+}
+
+.dots {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    background: var(--sticker-color);
+    border-radius: 50%;
+    display: inline-block;
+}
+
+/* Sticker content */
+.sticker-content {
+    margin: 1.5rem 0;
+}
+
+.fruit-container {
+    position: relative;
+    text-align: center;
+    padding: 2rem 0;
+    margin-bottom: 1rem;
+}
+
+.fruit-icon {
+    position: relative;
+    display: inline-block;
+}
+
+.main-fruit {
+    font-size: 5rem;
+    display: block;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    animation: fruitBounce 2s ease-in-out infinite;
+}
+
+@keyframes fruitBounce {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    25% {
+        transform: translateY(-10px) rotate(-5deg);
+    }
+    50% {
+        transform: translateY(-15px) rotate(0deg);
+    }
+    75% {
+        transform: translateY(-10px) rotate(5deg);
+    }
+}
+
+/* Lightbulbs */
+.lightbulb {
+    position: absolute;
+    font-size: 1.5rem;
+    animation: lightbulbGlow 2s ease-in-out infinite;
+}
+
+.lightbulb-1 {
+    top: -10px;
+    left: -20px;
+    animation-delay: 0.3s;
+}
+
+.lightbulb-2 {
+    top: -10px;
+    right: -20px;
+    animation-delay: 0.6s;
+}
+
+@keyframes lightbulbGlow {
+    0%, 100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    50% {
+        transform: scale(1.2);
+        filter: brightness(1.5);
+    }
+}
+
+/* Sparkles */
+.sparkle {
+    position: absolute;
+    font-size: 1rem;
+    animation: sparkleFloat 3s ease-in-out infinite;
+}
+
+.sparkle-1 {
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.sparkle-2 {
+    top: 20%;
+    right: 15%;
+    animation-delay: 0.5s;
+}
+
+.sparkle-3 {
+    bottom: 20%;
+    left: 15%;
+    animation-delay: 1s;
+}
+
+@keyframes sparkleFloat {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.7;
+    }
+    50% {
+        transform: translateY(-10px) rotate(180deg);
+        opacity: 1;
+    }
+}
+
+/* Refresh arrow */
+.refresh-arrow {
+    position: absolute;
+    bottom: -10px;
+    right: 10px;
+    font-size: 2rem;
+    color: var(--sticker-color);
+    animation: rotate 3s linear infinite;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Barcode section */
+.barcode-section {
+    background: white;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 2px solid #e0e0e0;
+}
+
+.barcode {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 2px;
+    height: 40px;
+    padding: 0.5rem 0;
+}
+
+.barcode-line {
+    background: #000;
+    height: 100%;
+    animation: barcodeFlash 2s ease-in-out infinite;
+}
+
+.barcode-line:nth-child(odd) {
+    height: 80%;
+}
+
+.barcode-line:nth-child(even) {
+    height: 100%;
+}
+
+@keyframes barcodeFlash {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Sticker footer */
+.sticker-footer {
+    margin-top: 1rem;
+}
+
+.grown-by {
+    text-align: center;
+    font-size: 0.65rem;
+    color: #7f8c8d;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 0.75rem;
+}
+
+.company {
+    color: var(--sticker-color);
+    font-weight: 800;
+    font-size: 0.75rem;
+}
+
+.project-info {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--sticker-color);
+}
+
+.info-text {
+    font-size: 0.85rem;
+    color: #2c3e50;
+    font-weight: 600;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+}
+
+.info-date {
+    font-size: 0.7rem;
+    color: #7f8c8d;
+    font-weight: 600;
+}
+
+/* Sticker tab (pull tab effect) */
+.sticker-tab {
+    position: absolute;
+    top: 50%;
+    right: -15px;
+    transform: translateY(-50%);
+    background: var(--sticker-color);
+    color: white;
+    padding: 1rem 0.5rem;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.8rem;
+    box-shadow: 3px 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive sizing */
+@media (max-width: 768px) {
+    .sticker {
+        width: 240px;
+        padding: 1rem;
+    }
+    
+    .main-fruit {
+        font-size: 4rem;
+    }
+    
+    .lightbulb {
+        font-size: 1.2rem;
+    }
+}
+
+/* Print styles for actual sticker printing */
+@media print {
+    .sticker {
+        box-shadow: none;
+        page-break-inside: avoid;
+    }
+    
+    .sticker:hover {
+        transform: none;
+    }
+    
+    .main-fruit,
+    .lightbulb,
+    .sparkle,
+    .refresh-arrow {
+        animation: none;
+    }
+}
+
