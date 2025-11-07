@@ -8,24 +8,22 @@ import StickerGenerator from './pages/StickerGenerator';
 import Shelf from './pages/Shelf';
 import './styles/App.css';
 
-// Navigation component with animated fruit icons
+// Navigation component with pixel-art icons matching Figma design
 function Navigation() {
     const location = useLocation();
     const [hoveredItem, setHoveredItem] = useState(null);
     
     const navItems = [
-        { path: '/', label: 'Garden', emoji: '🌱', color: '#4CAF50' },
-        { path: '/generate', label: 'Plant Project', emoji: '🍎', color: '#FF6B6B' },
-        { path: '/shelf', label: 'Harvest Shelf', emoji: '🥬', color: '#8BC34A' }
+        { path: '/', label: 'Garden', icon: '/nav-icons/food-drink-fruit-cherry.svg', color: '#000000' },
+        { path: '/generate', label: 'Plant Project', icon: '/nav-icons/ecology-plant-growth-soil-nature.svg', color: '#000000' },
+        { path: '/shelf', label: 'Harvest Shelf', icon: '/nav-icons/photography-focus-flower.svg', color: '#000000' }
     ];
     
     return (
         <nav className="main-navigation">
             <div className="nav-container">
                 <div className="nav-brand">
-                    <span className="brand-emoji">🍅</span>
-                    <h1>Fresh Takes Garden</h1>
-                    <span className="brand-tagline">Innovation Growing Daily</span>
+                    <img src="/nav-icons/Logo.png" alt="Logo" className="brand-logo" />
                 </div>
                 
                 <div className="nav-links">
@@ -41,22 +39,15 @@ function Navigation() {
                                 animationDelay: `${index * 0.1}s`
                             }}
                         >
-                            <span className={`nav-emoji ${hoveredItem === index ? 'bouncing' : ''}`}>
-                                {item.emoji}
-                            </span>
+                            <div className={`nav-icon ${hoveredItem === index ? 'bouncing' : ''}`}>
+                                <img src={item.icon} alt={item.label} width="50" height="50" />
+                            </div>
                             <span className="nav-label">{item.label}</span>
                             {location.pathname === item.path && (
                                 <span className="active-indicator"></span>
                             )}
                         </Link>
                     ))}
-                </div>
-                
-                <div className="nav-stats">
-                    <div className="stat-item">
-                        <span className="stat-value" id="project-count">0</span>
-                        <span className="stat-label">Projects Growing</span>
-                    </div>
                 </div>
             </div>
         </nav>
@@ -94,15 +85,6 @@ function App() {
         fetchProjects();
     }, []);
     
-    // Update project count
-    useEffect(() => {
-        const countElement = document.getElementById('project-count');
-        if (countElement) {
-            countElement.textContent = projects.length;
-            countElement.classList.add('pop-animation');
-            setTimeout(() => countElement.classList.remove('pop-animation'), 300);
-        }
-    }, [projects]);
     
     const fetchProjects = async () => {
         try {

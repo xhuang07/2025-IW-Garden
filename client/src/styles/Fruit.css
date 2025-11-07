@@ -10,27 +10,16 @@
     transition: all 0.3s ease;
 }
 
-/* Size variations */
-.fruit-small {
-    font-size: 2rem;
-}
+/* Size variations are now handled inline via props */
 
-.fruit-medium {
-    font-size: 3rem;
-}
-
-.fruit-large {
-    font-size: 4.5rem;
-}
-
-.fruit-xlarge {
-    font-size: 6rem;
-}
-
-.fruit-emoji {
+.fruit-illustration {
     display: block;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
     transition: all 0.3s ease;
+}
+
+.fruit-illustration svg {
+    display: block;
 }
 
 /* Animated fruits */
@@ -38,9 +27,9 @@
     animation: fruitFloat 3s ease-in-out infinite;
 }
 
-.fruit-animated:hover .fruit-emoji {
+.fruit-animated:hover .fruit-illustration {
     transform: scale(1.1) rotate(5deg);
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.25));
 }
 
 /* Floating animation */

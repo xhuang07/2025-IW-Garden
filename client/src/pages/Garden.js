@@ -10,7 +10,38 @@ function Garden({ projects, onProjectLiked }) {
     const [selectedProject, setSelectedProject] = useState(null);
     const [gardenView, setGardenView] = useState('floating'); // 'floating', 'tree', 'grid'
     const [season, setSeason] = useState('summer');
+    const [scrollProgress, setScrollProgress] = useState(0);
     const gardenRef = useRef(null);
+    
+    // Initialize Unicorn Studio animation
+    useEffect(() => {
+        const initUnicornStudio = () => {
+            if (window.UnicornStudio && window.UnicornStudio.isInitialized) {
+                console.log('Unicorn Studio initialized successfully');
+            } else if (window.UnicornStudio) {
+                window.UnicornStudio.init();
+                console.log('Unicorn Studio init called');
+            } else {
+                console.log('Waiting for Unicorn Studio to load...');
+                setTimeout(initUnicornStudio, 500);
+            }
+        };
+        
+        initUnicornStudio();
+    }, []);
+    
+    // Instant background transition on scroll
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollPosition = window.scrollY;
+            // Instant transition: if scrolled at all, show unblurred
+            const progress = scrollPosition > 0 ? 1 : 0;
+            setScrollProgress(progress);
+        };
+        
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
     
     // Create floating particles effect
     useEffect(() => {
@@ -102,8 +133,48 @@ function Garden({ projects, onProjectLiked }) {
         setTimeout(() => heart.remove(), 2000);
     };
     
+    const handleEnterGarden = () => {
+        // Jump to fruits section
+        window.scrollTo({
+            top: window.innerHeight,
+            behavior: 'auto'
+        });
+    };
+    
     return (
         <div className={`garden-page ${getSeasonClass()}`} ref={gardenRef}>
+            {/* Background Images with Scroll Transition */}
+            <div className="garden-background-container">
+                <div 
+                    className="garden-background blurred"
+                    style={{
+                        backgroundImage: 'url(/Background_blurred.png)',
+                        opacity: 1 - scrollProgress
+                    }}
+                />
+                <div 
+                    className="garden-background unblurred"
+                    style={{
+                        backgroundImage: 'url(/Background_unblurred.png)',
+                        opacity: scrollProgress
+                    }}
+                />
+            </div>
+            
+            {/* Unicorn Studio Background Animation */}
+            <div 
+                className="unicorn-studio-background"
+                data-us-project="oJqvmvXDrhQFEhdCz7z6"
+            />
+            
+            {/* Hero Section - Above the Fold */}
+            <div className="hero-section">
+                <h1 className="hero-title">Innovation garden</h1>
+                <button className="hero-button" onClick={handleEnterGarden}>
+                    Enter the garden
+                </button>
+            </div>
+            
             {/* Garden Controls */}
             <div className="garden-controls">
                 <div className="view-switcher">
@@ -144,22 +215,8 @@ function Garden({ projects, onProjectLiked }) {
                 </div>
             </div>
             
-            {/* Garden Title */}
-            <motion.div 
-                className="garden-header"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-            >
-                <h1 className="garden-title">
-                    <span className="title-emoji">🌱</span>
-                    The Innovation Garden
-                    <span className="title-emoji">🌱</span>
-                </h1>
-                <p className="garden-subtitle">
-                    Where fresh ideas bloom and grow
-                </p>
-            </motion.div>
+            {/* Spacer to push fruits below the fold */}
+            <div className="hero-spacer"></div>
             
             {/* Fruit Garden */}
             <div className={`fruit-garden view-${gardenView}`}>

@@ -2,6 +2,7 @@
 // Fruit sticker component matching the original design
 
 import React from 'react';
+import FruitIllustration from './FruitIllustration';
 import '../styles/Sticker.css';
 
 function Sticker({ data }) {
@@ -31,33 +32,6 @@ function Sticker({ data }) {
         return lines;
     };
     
-    // Get fruit icon based on type
-    const getFruitIcon = () => {
-        const fruitIcons = {
-            tomato: '🍅',
-            apple: '🍎',
-            orange: '🍊',
-            grape: '🍇',
-            strawberry: '🍓',
-            cherry: '🍒',
-            peach: '🍑',
-            watermelon: '🍉',
-            banana: '🍌',
-            pineapple: '🍍',
-            mango: '🥭',
-            kiwi: '🥝',
-            avocado: '🥑',
-            corn: '🌽',
-            carrot: '🥕',
-            broccoli: '🥦',
-            pepper: '🌶️',
-            cucumber: '🥒',
-            lettuce: '🥬',
-            mushroom: '🍄'
-        };
-        return fruitIcons[fruitType] || '🍎';
-    };
-    
     return (
         <div className="sticker" style={{ '--sticker-color': color }}>
             <div className="sticker-border">
@@ -72,7 +46,9 @@ function Sticker({ data }) {
                 <div className="sticker-content">
                     <div className="fruit-container">
                         <div className="fruit-icon">
-                            <span className="main-fruit">{getFruitIcon()}</span>
+                            <div className="main-fruit">
+                                <FruitIllustration type={fruitType} color={color} size={120} />
+                            </div>
                             <div className="lightbulb lightbulb-1">💡</div>
                             <div className="lightbulb lightbulb-2">💡</div>
                         </div>

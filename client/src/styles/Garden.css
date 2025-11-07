@@ -4,10 +4,117 @@
 .garden-page {
     min-height: 100vh;
     position: relative;
-    overflow: hidden;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    transition: background 0.5s ease;
+    overflow-x: hidden;
+    background: #1a1a2e;
     padding: 2rem;
+}
+
+/* Background Container with Scroll Transition */
+.garden-background-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.garden-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    will-change: opacity;
+    transition: opacity 0.5s ease-out;
+}
+
+.garden-background.blurred {
+    z-index: 1;
+}
+
+.garden-background.unblurred {
+    z-index: 2;
+}
+
+/* Unicorn Studio Background Animation */
+.unicorn-studio-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+.unicorn-studio-background canvas,
+.unicorn-studio-background > div {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+}
+
+/* Hero Section - Above the Fold */
+.hero-section {
+    position: relative;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+.hero-title {
+    font-family: "spalla", sans-serif;
+    font-weight: 700;
+    font-size: 128px;
+    line-height: normal;
+    letter-spacing: -2.56px;
+    color: #000000;
+    margin: 0;
+    text-align: center;
+    text-transform: lowercase;
+}
+
+.hero-button {
+    background: rgba(255, 255, 255, 0.8);
+    border: 4px solid #000000;
+    border-radius: 100px;
+    padding: 32px 40px;
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 700;
+    font-size: 40px;
+    line-height: normal;
+    letter-spacing: -2px;
+    color: #000000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.hero-button:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.hero-button:active {
+    transform: translateY(-2px);
+}
+
+.hero-spacer {
+    height: 100vh;
+    position: relative;
+    z-index: 50;
 }
 
 /* Season themes */
@@ -32,7 +139,7 @@
     position: absolute;
     top: 100px;
     right: 2rem;
-    z-index: 10;
+    z-index: 100;
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -51,6 +158,10 @@
 
 .view-switcher {
     flex-direction: row;
+}
+
+.season-switcher {
+    display: none; /* Hidden but code preserved */
 }
 
 .view-switcher button {
@@ -96,6 +207,8 @@
 
 /* Garden header */
 .garden-header {
+    position: relative;
+    z-index: 100;
     text-align: center;
     margin-bottom: 3rem;
     color: white;
@@ -132,7 +245,8 @@
 /* Fruit garden */
 .fruit-garden {
     position: relative;
-    min-height: 60vh;
+    z-index: 100;
+    min-height: 100vh;
     width: 100%;
 }
 
@@ -404,6 +518,17 @@
         padding: 1rem;
     }
     
+    .hero-title {
+        font-size: 64px;
+        letter-spacing: -1.28px;
+    }
+    
+    .hero-button {
+        font-size: 24px;
+        padding: 20px 32px;
+        letter-spacing: -1px;
+    }
+    
     .garden-controls {
         top: 80px;
         right: 1rem;
@@ -431,6 +556,23 @@
     
     .project-actions {
         flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 48px;
+        letter-spacing: -0.96px;
+    }
+    
+    .hero-button {
+        font-size: 20px;
+        padding: 16px 24px;
+        letter-spacing: -0.8px;
+    }
+    
+    .hero-section {
+        gap: 40px;
     }
 }
 
