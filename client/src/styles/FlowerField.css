@@ -1,0 +1,188 @@
+/* client/src/styles/FlowerField.css */
+/* Scattered flower field layout at the bottom of the page */
+
+.flower-field {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 150%; /* Allow 1.5x width for horizontal overflow */
+    height: 450px;
+    z-index: 100;
+    padding-bottom: 2rem;
+    pointer-events: none;
+    will-change: transform;
+    /* No transition - direct manipulation for smooth scroll-jacking */
+}
+
+.flower-field-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: all;
+}
+
+/* Individual flower styling (SVG groups) */
+.flower-group {
+    transition: opacity 0.3s ease;
+    will-change: transform;
+}
+
+/* Individual flower styling (legacy div support) */
+.flower {
+    position: absolute;
+    pointer-events: none;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    will-change: transform;
+}
+
+/* Flower size variants - more similar sizes for natural grouping */
+.flower-large {
+    width: 120px;
+    height: 120px;
+}
+
+.flower-medium {
+    width: 110px;
+    height: 110px;
+}
+
+.flower-small {
+    width: 90px;
+    height: 90px;
+}
+
+.flower-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
+}
+
+/* Gentle swaying animation for flowers */
+.flower {
+    animation: gentle-sway 4s ease-in-out infinite;
+}
+
+/* Vary animation timing for natural movement */
+.flower:nth-child(odd) {
+    animation-duration: 4.5s;
+    animation-delay: 0.3s;
+}
+
+.flower:nth-child(even) {
+    animation-duration: 3.8s;
+    animation-delay: 0.6s;
+}
+
+.flower:nth-child(3n) {
+    animation-duration: 4.2s;
+    animation-delay: 0.9s;
+}
+
+.flower:nth-child(5n) {
+    animation-duration: 4.7s;
+    animation-delay: 0.15s;
+}
+
+@keyframes gentle-sway {
+    0%, 100% {
+        transform: rotate(var(--base-rotation, 0deg)) translateY(0) translateX(0);
+    }
+    25% {
+        transform: rotate(calc(var(--base-rotation, 0deg) + 2deg)) translateY(-3px) translateX(2px);
+    }
+    50% {
+        transform: rotate(var(--base-rotation, 0deg)) translateY(0) translateX(0);
+    }
+    75% {
+        transform: rotate(calc(var(--base-rotation, 0deg) - 2deg)) translateY(-2px) translateX(-2px);
+    }
+}
+
+/* Responsive behavior - Tablet (768px and below) */
+@media (max-width: 48rem) {
+    .flower-field {
+        height: 350px;
+        padding-bottom: 1.5rem;
+    }
+    
+    /* Hide some flowers on tablet for less density */
+    .flower.hide-tablet,
+    .flower-group.hide-tablet {
+        display: none;
+    }
+    
+    /* Adjust sizes for tablet - keep similar */
+    .flower-large {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .flower-medium {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .flower-small {
+        width: 75px;
+        height: 75px;
+    }
+}
+
+/* Responsive behavior - Mobile (480px and below) */
+@media (max-width: 30rem) {
+    .flower-field {
+        height: 280px;
+        padding-bottom: 1rem;
+    }
+    
+    /* Hide additional flowers on mobile */
+    .flower.hide-mobile,
+    .flower.hide-tablet,
+    .flower-group.hide-mobile,
+    .flower-group.hide-tablet {
+        display: none;
+    }
+    
+    /* Smaller sizes for mobile - keep similar */
+    .flower-large {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .flower-medium {
+        width: 75px;
+        height: 75px;
+    }
+    
+    .flower-small {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+/* Very small screens (360px and below) */
+@media (max-width: 22.5rem) {
+    .flower-field {
+        height: 230px;
+        padding-bottom: 0.75rem;
+    }
+    
+    .flower-large {
+        width: 65px;
+        height: 65px;
+    }
+    
+    .flower-medium {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .flower-small {
+        width: 55px;
+        height: 55px;
+    }
+}
+

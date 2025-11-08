@@ -4,14 +4,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Fruit from '../components/Fruit';
+import FlowerField from '../components/FlowerField';
 import '../styles/Garden.css';
 
 function Garden({ projects, onProjectLiked }) {
     const [selectedProject, setSelectedProject] = useState(null);
-    const [gardenView, setGardenView] = useState('floating'); // 'floating', 'tree', 'grid'
-    const [season, setSeason] = useState('summer');
     const [scrollProgress, setScrollProgress] = useState(0);
     const gardenRef = useRef(null);
+    
+    // Debug: Log projects to verify data
+    useEffect(() => {
+        console.log('🌻 GARDEN: Component received projects:', projects.length);
+        console.log('🌻 GARDEN: Projects data:', projects);
+        if (projects.length === 0) {
+            console.warn('🌻 GARDEN: NO PROJECTS RECEIVED!');
+        }
+    }, [projects]);
     
     // Initialize Unicorn Studio animation
     useEffect(() => {
@@ -30,17 +38,150 @@ function Garden({ projects, onProjectLiked }) {
         initUnicornStudio();
     }, []);
     
-    // Instant background transition on scroll
+    // Background transition + Scroll-jacking for flower field horizontal panning
     useEffect(() => {
+        const flowerField = document.querySelector('.flower-field');
+        if (!flowerField) return;
+        
+        const flowerFieldParent = flowerField.parentElement;
+        if (!flowerFieldParent) return;
+        
+        let isInFlowerSection = false;
+        let flowerScrollProgress = 0; // 0 to 1
+        let lockedScrollPosition = 0;
+        
+        // Calculate dimensions and positions
+        const getDimensions = () => {
+            const viewportHeight = window.innerHeight;
+            const viewportWidth = window.innerWidth;
+            const pageHeight = flowerFieldParent.offsetHeight;
+            const flowerFieldHeight = flowerField.offsetHeight;
+            const flowerFieldTop = pageHeight - flowerFieldHeight;
+            const scrollStart = Math.max(0, flowerFieldTop - viewportHeight + flowerFieldHeight);
+            const flowerFieldWidth = flowerField.offsetWidth;
+            const overflowWidth = flowerFieldWidth - viewportWidth;
+            
+            return {
+                viewportHeight,
+                viewportWidth,
+                scrollStart,
+                overflowWidth,
+                flowerFieldTop
+            };
+        };
+        
+        let dimensions = getDimensions();
+        
+        // Handle regular scroll updates
         const handleScroll = () => {
             const scrollPosition = window.scrollY;
-            // Instant transition: if scrolled at all, show unblurred
+            
+            // Background blur effect
             const progress = scrollPosition > 0 ? 1 : 0;
             setScrollProgress(progress);
+            
+            // Update dimensions
+            dimensions = getDimensions();
+            
+            // Check if we've reached the flower section
+            if (scrollPosition >= dimensions.scrollStart && !isInFlowerSection) {
+                isInFlowerSection = true;
+                lockedScrollPosition = scrollPosition;
+                flowerScrollProgress = 0;
+            }
+            
+            // If not in flower section yet, keep flower field at start position
+            if (scrollPosition < dimensions.scrollStart) {
+                flowerField.style.transform = 'translateX(0)';
+            }
+        };
+        
+        // Handle wheel events for scroll-jacking in flower section with looping
+        const handleWheel = (e) => {
+            dimensions = getDimensions();
+            const scrollPosition = window.scrollY;
+            
+            // Detect scroll direction
+            const isScrollingDown = e.deltaY > 0;
+            const isScrollingUp = e.deltaY < 0;
+            
+            // Check if we're in or entering the flower section
+            if (scrollPosition >= dimensions.scrollStart) {
+                if (!isInFlowerSection) {
+                    isInFlowerSection = true;
+                    lockedScrollPosition = scrollPosition;
+                    flowerScrollProgress = 0;
+                }
+                
+                // Check for exit condition (only when scrolling up at leftmost)
+                if (isScrollingUp && flowerScrollProgress <= 0) {
+                    // User wants to scroll up and is at leftmost - exit flower section
+                    isInFlowerSection = false;
+                    // Don't prevent default - allow normal upward scroll
+                    return; // Exit handler to allow normal scroll
+                }
+                
+                // Otherwise, capture all scroll events for panning/looping
+                e.preventDefault();
+                
+                // Convert wheel delta to scroll progress
+                // Positive deltaY = scrolling down = move content left (increase progress)
+                // Negative deltaY = scrolling up = move content right (decrease progress)
+                const sensitivity = 0.001;
+                const delta = e.deltaY * sensitivity;
+                
+                flowerScrollProgress += delta;
+                
+                // Handle looping when scrolling down past rightmost
+                if (flowerScrollProgress >= 1) {
+                    // Loop back to start seamlessly
+                    // Carry over any excess scroll progress for smooth continuation
+                    const excess = flowerScrollProgress - 1;
+                    flowerScrollProgress = excess;
+                    
+                    // Note: No visual transition needed - the modulo effect creates seamless loop
+                    // The transform will be recalculated below with the new progress value
+                }
+                
+                // Clamp progress for scrolling up (can't go below 0)
+                flowerScrollProgress = Math.max(0, flowerScrollProgress);
+                
+                // Apply horizontal translation
+                const translateX = -(flowerScrollProgress * dimensions.overflowWidth);
+                flowerField.style.transform = `translateX(${translateX}px)`;
+                
+                // Lock scroll position (keep page at flower section)
+                window.scrollTo(0, lockedScrollPosition);
+                
+            } else if (scrollPosition < dimensions.scrollStart && isInFlowerSection) {
+                // User scrolled above flower section - reset state
+                isInFlowerSection = false;
+                flowerScrollProgress = 0;
+                flowerField.style.transform = 'translateX(0)';
+            }
+        };
+        
+        // Handle resize
+        const handleResize = () => {
+            dimensions = getDimensions();
+            // Reapply current translation
+            if (isInFlowerSection || flowerScrollProgress > 0) {
+                const translateX = -(flowerScrollProgress * dimensions.overflowWidth);
+                flowerField.style.transform = `translateX(${translateX}px)`;
+            }
         };
         
         window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        window.addEventListener('wheel', handleWheel, { passive: false });
+        window.addEventListener('resize', handleResize);
+        
+        handleScroll(); // Initial call
+        
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('wheel', handleWheel);
+            window.removeEventListener('resize', handleResize);
+        };
     }, []);
     
     // Create floating particles effect
@@ -63,52 +204,6 @@ function Garden({ projects, onProjectLiked }) {
             particles.forEach(p => p.remove());
         };
     }, []);
-    
-    // Garden layout configurations
-    const getProjectPosition = (project, index) => {
-        switch (gardenView) {
-            case 'tree':
-                // Arrange in tree-like clusters
-                const treeRow = Math.floor(index / 5);
-                const treeCol = index % 5;
-                return {
-                    x: 20 + (treeCol * 15) + (treeRow % 2 ? 7 : 0) + Math.random() * 5,
-                    y: 15 + (treeRow * 20) + Math.random() * 5,
-                    scale: 0.8 + Math.random() * 0.4
-                };
-            
-            case 'grid':
-                // Neat grid arrangement
-                const gridCols = 6;
-                const col = index % gridCols;
-                const row = Math.floor(index / gridCols);
-                return {
-                    x: 10 + (col * 15),
-                    y: 20 + (row * 20),
-                    scale: 1
-                };
-            
-            case 'floating':
-            default:
-                // Use database positions or random
-                return {
-                    x: project.positionX || (10 + Math.random() * 80),
-                    y: project.positionY || (20 + Math.random() * 60),
-                    scale: 0.8 + Math.random() * 0.4
-                };
-        }
-    };
-    
-    // Season effects
-    const getSeasonClass = () => {
-        const seasonClasses = {
-            spring: 'season-spring',
-            summer: 'season-summer',
-            autumn: 'season-autumn',
-            winter: 'season-winter'
-        };
-        return seasonClasses[season] || '';
-    };
     
     const handleFruitClick = (project) => {
         setSelectedProject(project);
@@ -134,29 +229,23 @@ function Garden({ projects, onProjectLiked }) {
     };
     
     const handleEnterGarden = () => {
-        // Jump to fruits section
+        // Jump to bottom where flowers are
         window.scrollTo({
-            top: window.innerHeight,
-            behavior: 'auto'
+            top: document.documentElement.scrollHeight,
+            behavior: 'smooth'
         });
     };
     
     return (
-        <div className={`garden-page ${getSeasonClass()}`} ref={gardenRef}>
-            {/* Background Images with Scroll Transition */}
+        <div className="garden-page" ref={gardenRef}>
+            {/* Background Image with Scroll-based Blur Effect */}
             <div className="garden-background-container">
                 <div 
-                    className="garden-background blurred"
+                    className="garden-background"
                     style={{
-                        backgroundImage: 'url(/Background_blurred.png)',
-                        opacity: 1 - scrollProgress
-                    }}
-                />
-                <div 
-                    className="garden-background unblurred"
-                    style={{
-                        backgroundImage: 'url(/Background_unblurred.png)',
-                        opacity: scrollProgress
+                        backgroundImage: 'url(/Background.png)',
+                        filter: `blur(${(1 - scrollProgress) * 10}px)`,
+                        opacity: 0.9 + (scrollProgress * 0.1)
                     }}
                 />
             </div>
@@ -175,124 +264,22 @@ function Garden({ projects, onProjectLiked }) {
                 </button>
             </div>
             
-            {/* Garden Controls */}
-            <div className="garden-controls">
-                <div className="view-switcher">
-                    <button
-                        className={gardenView === 'floating' ? 'active' : ''}
-                        onClick={() => setGardenView('floating')}
-                        title="Floating Garden"
-                    >
-                        🎈
-                    </button>
-                    <button
-                        className={gardenView === 'tree' ? 'active' : ''}
-                        onClick={() => setGardenView('tree')}
-                        title="Orchard View"
-                    >
-                        🌳
-                    </button>
-                    <button
-                        className={gardenView === 'grid' ? 'active' : ''}
-                        onClick={() => setGardenView('grid')}
-                        title="Grid View"
-                    >
-                        📱
-                    </button>
-                </div>
-                
-                <div className="season-switcher">
-                    <select 
-                        value={season} 
-                        onChange={(e) => setSeason(e.target.value)}
-                        className="season-select"
-                    >
-                        <option value="spring">🌸 Spring</option>
-                        <option value="summer">☀️ Summer</option>
-                        <option value="autumn">🍂 Autumn</option>
-                        <option value="winter">❄️ Winter</option>
-                    </select>
-                </div>
-            </div>
+            {/* Garden Controls - Hidden for clean flower meadow view */}
             
-            {/* Spacer to push fruits below the fold */}
-            <div className="hero-spacer"></div>
+            {/* Unified Flower Field - Interactive with D3 drag and click */}
+            <FlowerField 
+                projects={projects}
+                onFlowerClick={handleFruitClick}
+            />
             
-            {/* Fruit Garden */}
-            <div className={`fruit-garden view-${gardenView}`}>
-                {gardenView === 'tree' && (
-                    <div className="tree-branches">
-                        <svg className="branch-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-                            <path
-                                d="M50 80 Q30 60 20 40 M50 80 Q70 60 80 40 M50 80 Q50 60 50 40"
-                                stroke="brown"
-                                strokeWidth="2"
-                                fill="none"
-                                opacity="0.3"
-                            />
-                        </svg>
-                    </div>
-                )}
-                
-                <AnimatePresence>
-                    {projects.map((project, index) => {
-                        const position = getProjectPosition(project, index);
-                        return (
-                            <motion.div
-                                key={project.id}
-                                className="fruit-container"
-                                initial={{ opacity: 0, scale: 0 }}
-                                animate={{ 
-                                    opacity: 1, 
-                                    scale: position.scale,
-                                    x: position.x + '%',
-                                    y: position.y + '%'
-                                }}
-                                transition={{
-                                    duration: 0.5,
-                                    delay: index * 0.1,
-                                    type: "spring",
-                                    stiffness: 260,
-                                    damping: 20
-                                }}
-                                whileHover={{ 
-                                    scale: position.scale * 1.2,
-                                    rotate: [0, -5, 5, -5, 0],
-                                    transition: { duration: 0.5 }
-                                }}
-                                onClick={() => handleFruitClick(project)}
-                                style={{
-                                    position: 'absolute',
-                                    left: position.x + '%',
-                                    top: position.y + '%',
-                                    transform: 'translate(-50%, -50%)'
-                                }}
-                            >
-                                <Fruit 
-                                    type={project.stickerData?.fruitType || 'apple'}
-                                    size="medium"
-                                    animated={true}
-                                    glowing={project.likes > 5}
-                                />
-                                <div className="fruit-label">
-                                    <span className="fruit-name">{project.projectName}</span>
-                                    {project.likes > 0 && (
-                                        <span className="fruit-likes">❤️ {project.likes}</span>
-                                    )}
-                                </div>
-                            </motion.div>
-                        );
-                    })}
-                </AnimatePresence>
-                
-                {projects.length === 0 && (
-                    <div className="empty-garden">
-                        <span className="empty-emoji">🌱</span>
-                        <h3>The garden is ready for planting!</h3>
-                        <p>Be the first to plant a project</p>
-                    </div>
-                )}
-            </div>
+            {/* Show empty state if no projects */}
+            {projects.length === 0 && (
+                <div className="empty-garden" style={{ position: 'absolute', bottom: '200px', left: '50%', transform: 'translateX(-50%)', zIndex: 200 }}>
+                    <span className="empty-emoji">🌱</span>
+                    <h3>The garden is ready for planting!</h3>
+                    <p>Be the first to plant a project</p>
+                </div>
+            )}
             
             {/* Project Modal */}
             <AnimatePresence>

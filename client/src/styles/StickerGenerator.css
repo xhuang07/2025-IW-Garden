@@ -15,7 +15,7 @@
 }
 
 .generator-header h1 {
-    font-size: 3rem;
+    font-size: clamp(2rem, 1.5rem + 2vw, 3rem); /* Fluid heading */
     font-weight: 800;
     margin: 0;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -25,14 +25,14 @@
 }
 
 .generator-header p {
-    font-size: 1.2rem;
+    font-size: clamp(1rem, 0.875rem + 0.5vw, 1.25rem); /* Fluid text */
     color: #7f8c8d;
     margin-top: 0.5rem;
 }
 
 /* Generator container */
 .generator-container {
-    max-width: 1400px;
+    max-width: 87.5rem; /* 1400px → 87.5rem */
     margin: 0 auto;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -42,7 +42,7 @@
 /* Form section */
 .form-section {
     background: white;
-    border-radius: 20px;
+    border-radius: 1.25rem; /* 20px → 1.25rem */
     padding: 2rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
@@ -50,7 +50,7 @@
 .form-section h2 {
     color: #2c3e50;
     margin: 0 0 1.5rem 0;
-    font-size: 1.8rem;
+    font-size: clamp(1.5rem, 1.25rem + 0.75vw, 1.8rem); /* Fluid heading */
 }
 
 .project-form {
@@ -69,13 +69,13 @@
 .form-group label {
     font-weight: 600;
     color: #2c3e50;
-    font-size: 0.95rem;
+    font-size: 0.9375rem; /* 0.95rem → 0.9375rem */
 }
 
 .form-group input {
     padding: 0.875rem 1rem;
     border: 2px solid #e0e0e0;
-    border-radius: 10px;
+    border-radius: 0.625rem; /* 10px → 0.625rem */
     font-size: 1rem;
     transition: all 0.3s ease;
 }
@@ -94,14 +94,14 @@
 .mad-libs-section {
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     padding: 1.5rem;
-    border-radius: 12px;
+    border-radius: 0.75rem; /* 12px → 0.75rem */
     margin: 1rem 0;
 }
 
 .mad-libs-section h3 {
     margin: 0 0 1rem 0;
     color: #2c3e50;
-    font-size: 1.2rem;
+    font-size: clamp(1.125rem, 1rem + 0.25vw, 1.25rem); /* Fluid heading */
 }
 
 .mad-libs-section p {
@@ -125,12 +125,12 @@
 .mad-lib-select {
     padding: 0.75rem 1rem;
     border: 2px solid #e0e0e0;
-    border-radius: 8px;
+    border-radius: 0.5rem; /* 8px → 0.5rem */
     background: white;
     font-size: 1rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 150px;
+    min-width: 9.375rem; /* 150px → 9.375rem */
 }
 
 .mad-lib-select:hover {
@@ -146,13 +146,13 @@
 /* File upload area */
 .file-upload-area {
     border: 3px dashed #e0e0e0;
-    border-radius: 12px;
+    border-radius: 0.75rem; /* 12px → 0.75rem */
     padding: 2rem;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
     background: #f8f9fa;
-    min-height: 150px;
+    min-height: 9.375rem; /* 150px → 9.375rem */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -171,7 +171,7 @@
 }
 
 .upload-icon {
-    font-size: 3rem;
+    font-size: clamp(2rem, 1.5rem + 2vw, 3rem); /* Fluid icon */
 }
 
 .upload-placeholder p {
@@ -181,8 +181,8 @@
 
 .preview-image {
     max-width: 100%;
-    max-height: 200px;
-    border-radius: 8px;
+    max-height: 12.5rem; /* 200px → 12.5rem */
+    border-radius: 0.5rem; /* 8px → 0.5rem */
     object-fit: contain;
 }
 
@@ -198,7 +198,7 @@
     flex: 1;
     padding: 1rem 1.5rem;
     border: none;
-    border-radius: 12px;
+    border-radius: 0.75rem; /* 12px → 0.75rem */
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -235,7 +235,7 @@
 /* Preview section */
 .preview-section {
     background: white;
-    border-radius: 20px;
+    border-radius: 1.25rem; /* 20px → 1.25rem */
     padding: 2rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -250,7 +250,7 @@
 .preview-section h2 {
     color: #2c3e50;
     margin: 0 0 2rem 0;
-    font-size: 1.8rem;
+    font-size: clamp(1.5rem, 1.25rem + 0.75vw, 1.8rem); /* Fluid heading */
 }
 
 .sticker-preview {
@@ -258,7 +258,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 400px;
+    min-height: 25rem; /* 400px → 25rem */
     flex: 1;
 }
 
@@ -268,7 +268,7 @@
 }
 
 .placeholder-emoji {
-    font-size: 5rem;
+    font-size: clamp(3rem, 2.5rem + 2vw, 5rem); /* Fluid emoji */
     display: block;
     margin-bottom: 1rem;
     opacity: 0.5;
@@ -281,7 +281,7 @@
 }
 
 .sticker-placeholder p {
-    font-size: 1.1rem;
+    font-size: clamp(1rem, 0.875rem + 0.5vw, 1.125rem); /* Fluid text */
     line-height: 1.6;
 }
 
@@ -292,7 +292,7 @@
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     color: white;
     border: none;
-    border-radius: 12px;
+    border-radius: 0.75rem; /* 12px → 0.75rem */
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -310,19 +310,19 @@
     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     color: white;
     padding: 1.5rem;
-    border-radius: 12px;
+    border-radius: 0.75rem; /* 12px → 0.75rem */
     text-align: center;
 }
 
 .success-emoji {
-    font-size: 3rem;
+    font-size: clamp(2rem, 1.5rem + 2vw, 3rem); /* Fluid emoji */
     display: block;
     margin-bottom: 0.5rem;
 }
 
 .success-message h3 {
     margin: 0.5rem 0;
-    font-size: 1.5rem;
+    font-size: clamp(1.25rem, 1rem + 0.5vw, 1.5rem); /* Fluid heading */
 }
 
 .success-message p {
@@ -331,7 +331,7 @@
 }
 
 /* Responsive design */
-@media (max-width: 1024px) {
+@media (max-width: 64rem) { /* 1024px */
     .generator-container {
         grid-template-columns: 1fr;
     }
@@ -342,14 +342,12 @@
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 48rem) { /* 768px */
     .sticker-generator-page {
         padding: 1rem;
     }
     
-    .generator-header h1 {
-        font-size: 2rem;
-    }
+    /* generator-header h1 now uses clamp() for fluid scaling */
     
     .form-section,
     .preview-section {

@@ -97,7 +97,7 @@ function StickerGenerator({ onProjectAdded }) {
         uploadData.append('creator', formData.creator || 'Anonymous Gardener');
         uploadData.append('projectLink', formData.projectLink);
         uploadData.append('fruitType', generatedSticker?.fruitType || 'apple');
-        uploadData.append('stickerColor', generatedSticker?.color || '#FF6B6B');
+        uploadData.append('stickerColor', generatedSticker?.color || '#FEA57D');
         
         if (screenshot) {
             uploadData.append('screenshot', screenshot);

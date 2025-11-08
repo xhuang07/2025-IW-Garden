@@ -3,11 +3,13 @@
 
 .fruit {
     position: relative;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.3s ease;
+    width: 100%;
+    height: 100%;
 }
 
 /* Size variations are now handled inline via props */
@@ -35,16 +37,16 @@
 /* Floating animation */
 @keyframes fruitFloat {
     0%, 100% {
-        transform: translateY(0px) rotate(0deg);
+        transform: translateY(0) rotate(0deg);
     }
     25% {
-        transform: translateY(-10px) rotate(2deg);
+        transform: translateY(-0.625rem) rotate(2deg); /* -10px → -0.625rem */
     }
     50% {
-        transform: translateY(-15px) rotate(-2deg);
+        transform: translateY(-0.9375rem) rotate(-2deg); /* -15px → -0.9375rem */
     }
     75% {
-        transform: translateY(-10px) rotate(1deg);
+        transform: translateY(-0.625rem) rotate(1deg); /* -10px → -0.625rem */
     }
 }
 
@@ -116,7 +118,7 @@
 }
 
 /* Responsive sizing */
-@media (max-width: 768px) {
+@media (max-width: 48rem) { /* 768px */
     .fruit-small {
         font-size: 1.5rem;
     }
