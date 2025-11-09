@@ -3,10 +3,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import Sticker from '../components/Sticker';
 import '../styles/Shelf.css';
 
 function Shelf({ projects, onProjectLiked }) {
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('all');
     const [sortBy, setSortBy] = useState('newest');
@@ -76,8 +78,8 @@ function Shelf({ projects, onProjectLiked }) {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <h1>🥬 Harvest Shelf</h1>
-                <p>Browse the fruits of innovation</p>
+                {/* <h1>🥬 Harvest Shelf</h1> */}
+                {/* <p>Browse the fruits of innovation</p> */}
             </motion.div>
             
             {/* Search and Filter Bar */}
@@ -276,6 +278,19 @@ function Shelf({ projects, onProjectLiked }) {
                                             onClick={() => onProjectLiked(selectedProject.id)}
                                         >
                                             ❤️ Like Project
+                                        </button>
+                                        
+                                        <button 
+                                            className="action-btn garden"
+                                            onClick={() => {
+                                                const projectId = selectedProject.id || selectedProject._id;
+                                                console.log('🔗 SHELF: "See in Garden" clicked for project:', selectedProject.projectName);
+                                                console.log('🔗 SHELF: Project ID:', projectId, 'Type:', typeof projectId);
+                                                console.log('🔗 SHELF: Full project data:', selectedProject);
+                                                navigate('/', { state: { highlightProjectId: projectId } });
+                                            }}
+                                        >
+                                            🌸 See in Garden
                                         </button>
                                         
                                         {selectedProject.projectLink && (

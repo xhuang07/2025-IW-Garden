@@ -118,7 +118,7 @@ app.get('/api/projects/search', async (req, res) => {
 // Add new project
 app.post('/api/projects', upload.single('screenshot'), async (req, res) => {
     try {
-        const { projectName, location, creator, projectLink, fruitType, stickerColor } = req.body;
+        const { projectName, location, creator, projectLink, fruitType, stickerColor, projectAdjective, projectFeeling } = req.body;
         
         if (!projectName || !location) {
             return res.status(400).json({
@@ -129,8 +129,8 @@ app.post('/api/projects', upload.single('screenshot'), async (req, res) => {
         
         // Create sticker data
         const stickerData = {
-            fruitType: fruitType || 'apple',
-            color: stickerColor || '#FF6B6B',
+            fruitType: fruitType || 'shape1',
+            color: stickerColor || '#FEA57D',
             text: `I grow ${projectName} in ${location}`
         };
         
@@ -140,7 +140,10 @@ app.post('/api/projects', upload.single('screenshot'), async (req, res) => {
             creator: creator || 'Anonymous Gardener',
             projectLink: projectLink || null,
             screenshot: req.file ? `/uploads/${req.file.filename}` : null,
-            stickerData: JSON.stringify(stickerData)
+            stickerData: JSON.stringify(stickerData),
+            projectAdjective: projectAdjective || null,
+            projectFeeling: projectFeeling || null,
+            fruitType: fruitType || 'shape1'
         };
         
         const newProject = await addProject(projectData);

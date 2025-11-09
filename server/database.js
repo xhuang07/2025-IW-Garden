@@ -32,7 +32,9 @@ function initDB() {
             fruitType TEXT DEFAULT 'tomato',
             positionX REAL DEFAULT 0,
             positionY REAL DEFAULT 0,
-            gardenRow INTEGER DEFAULT 0
+            gardenRow INTEGER DEFAULT 0,
+            projectAdjective TEXT,
+            projectFeeling TEXT
         )
     `;
     
@@ -41,7 +43,53 @@ function initDB() {
             console.error('Error creating table:', err.message);
         } else {
             console.log('✅ Projects table ready');
+            // Run migrations to add any missing columns
+            runMigrations();
+        }
+    });
+}
+
+// Run database migrations to add missing columns
+function runMigrations() {
+    // Check if projectAdjective column exists, if not add it
+    db.all("PRAGMA table_info(projects)", (err, columns) => {
+        if (err) {
+            console.error('Error checking table structure:', err);
             seedInitialData();
+            return;
+        }
+        
+        const hasAdjective = columns.some(col => col.name === 'projectAdjective');
+        const hasFeeling = columns.some(col => col.name === 'projectFeeling');
+        
+        if (!hasAdjective) {
+            console.log('🔄 Adding projectAdjective column...');
+            db.run("ALTER TABLE projects ADD COLUMN projectAdjective TEXT", (err) => {
+                if (err && !err.message.includes('duplicate column')) {
+                    console.error('Error adding projectAdjective column:', err);
+                } else {
+                    console.log('✅ projectAdjective column added');
+                }
+                checkFeelingColumn();
+            });
+        } else {
+            checkFeelingColumn();
+        }
+        
+        function checkFeelingColumn() {
+            if (!hasFeeling) {
+                console.log('🔄 Adding projectFeeling column...');
+                db.run("ALTER TABLE projects ADD COLUMN projectFeeling TEXT", (err) => {
+                    if (err && !err.message.includes('duplicate column')) {
+                        console.error('Error adding projectFeeling column:', err);
+                    } else {
+                        console.log('✅ projectFeeling column added');
+                    }
+                    seedInitialData();
+                });
+            } else {
+                seedInitialData();
+            }
         }
     });
 }
@@ -62,10 +110,12 @@ function seedInitialData() {
                     location: "Innovation Lab",
                     creator: "Alex Chen",
                     projectLink: "https://example.com/ai-bot",
-                    fruitType: "apple",
+                    fruitType: "shape1",
+                    projectAdjective: "Revolutionary",
+                    projectFeeling: "Excited",
                     stickerData: JSON.stringify({
-                        fruitType: "apple",
-                        color: "#FF6B6B",
+                        fruitType: "shape1",
+                        color: "#FEA57D",
                         text: "I grow AI Assistant Bot in Innovation Lab"
                     })
                 },
@@ -74,10 +124,12 @@ function seedInitialData() {
                     location: "UX Studio",
                     creator: "Sarah Kim",
                     projectLink: "https://example.com/dashboard",
-                    fruitType: "orange",
+                    fruitType: "shape2",
+                    projectAdjective: "Innovative",
+                    projectFeeling: "Inspired",
                     stickerData: JSON.stringify({
-                        fruitType: "orange",
-                        color: "#FFA500",
+                        fruitType: "shape2",
+                        color: "#ABC9EF",
                         text: "I grow Customer Dashboard 2.0 in UX Studio"
                     })
                 },
@@ -86,18 +138,20 @@ function seedInitialData() {
                     location: "Backend Cave",
                     creator: "Mike Johnson",
                     projectLink: "https://example.com/pipeline",
-                    fruitType: "grape",
+                    fruitType: "shape8",
+                    projectAdjective: "Ripe",
+                    projectFeeling: "Charged",
                     stickerData: JSON.stringify({
-                        fruitType: "grape",
-                        color: "#9B59B6",
+                        fruitType: "shape8",
+                        color: "#BBBEA0",
                         text: "I grow Data Pipeline Optimizer in Backend Cave"
                     })
                 }
             ];
             
             const stmt = db.prepare(`
-                INSERT INTO projects (projectName, location, creator, projectLink, fruitType, stickerData, positionX, positionY, gardenRow)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO projects (projectName, location, creator, projectLink, fruitType, stickerData, positionX, positionY, gardenRow, projectAdjective, projectFeeling)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `);
             
             demoProjects.forEach((project, index) => {
@@ -114,7 +168,9 @@ function seedInitialData() {
                     project.stickerData,
                     posX,
                     posY,
-                    row
+                    row,
+                    project.projectAdjective,
+                    project.projectFeeling
                 );
             });
             
@@ -146,7 +202,7 @@ function getProjects() {
 // Add a new project
 function addProject(projectData) {
     return new Promise((resolve, reject) => {
-        const { projectName, location, creator, projectLink, screenshot, stickerData } = projectData;
+        const { projectName, location, creator, projectLink, screenshot, stickerData, projectAdjective, projectFeeling, fruitType } = projectData;
         
         // Generate random garden position
         const posX = Math.random() * 80 + 10;
@@ -154,11 +210,11 @@ function addProject(projectData) {
         const gardenRow = Math.floor(Math.random() * 5);
         
         const query = `
-            INSERT INTO projects (projectName, location, creator, projectLink, screenshot, stickerData, positionX, positionY, gardenRow)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO projects (projectName, location, creator, projectLink, screenshot, stickerData, positionX, positionY, gardenRow, projectAdjective, projectFeeling, fruitType)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `;
         
-        db.run(query, [projectName, location, creator, projectLink, screenshot, stickerData, posX, posY, gardenRow], function(err) {
+        db.run(query, [projectName, location, creator, projectLink, screenshot, stickerData, posX, posY, gardenRow, projectAdjective, projectFeeling, fruitType], function(err) {
             if (err) {
                 reject(err);
             } else {

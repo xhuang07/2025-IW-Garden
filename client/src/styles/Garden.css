@@ -87,30 +87,62 @@
     text-transform: lowercase;
 }
 
-.hero-button {
-    background: rgba(255, 255, 255, 0.8);
-    border: 4px solid #000000;
-    border-radius: 6.25rem; /* 100px → 6.25rem */
-    padding: 2rem 2.5rem; /* 32px 40px → 2rem 2.5rem */
-    font-family: 'Roboto Mono', monospace;
-    font-weight: 700;
-    font-size: clamp(1rem, 0.75rem + 1vw, 2.25rem); /* Fluid 16px-36px (reduced by 4px) */
-    line-height: normal;
-    letter-spacing: -0.125rem; /* -2px → -0.125rem */
-    color: #000000;
+/* Animated Enter Garden Button */
+.enter-garden-button {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgb(20, 20, 20);
+    border: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0px 0px 0px 4px rgba(210, 134, 100, 0.253);
+    cursor: pointer;
+    transition-duration: 0.3s;
+    overflow: hidden;
+    position: relative;
     cursor: pointer;
     transition: all 0.3s ease;
     white-space: nowrap;
 }
 
-.hero-button:hover {
-    background: rgba(255, 255, 255, 1);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+.enter-garden-button .svgIcon {
+    width: 24px;
+    transition-duration: 0.3s;
 }
 
-.hero-button:active {
-    transform: translateY(-2px);
+.enter-garden-button .svgIcon path {
+    fill: white;
+}
+
+.enter-garden-button:hover {
+    width: 260px;
+    border-radius: 50px;
+    transition-duration: 0.3s;
+    background-color: rgba(210, 134, 100, 1);
+    align-items: center;
+}
+
+.enter-garden-button:hover .svgIcon {
+    transition-duration: 0.3s;
+    transform: translateY(200%);
+}
+
+.enter-garden-button::before {
+    position: absolute;
+    bottom: -20px;
+    content: "Take a walk";
+    color: white;
+    font-size: 0px;
+}
+
+.enter-garden-button:hover::before {
+    font-size: 24px;
+    opacity: 1;
+    bottom: unset;
+    transition-duration: 0.3s;
 }
 
 /* Season themes */

@@ -164,8 +164,10 @@ function App() {
                     fruitType: `shape${(index % 15) + 1}`,
                     color: color
                 },
-                adjective: adjective,
-                feeling: feeling,
+                projectAdjective: adjective,  // Match database field name
+                projectFeeling: feeling,      // Match database field name
+                adjective: adjective,         // Keep for backwards compatibility
+                feeling: feeling,             // Keep for backwards compatibility
                 projectLink: `https://example.com/${name.toLowerCase().replace(/ /g, '-')}`
             };
         });

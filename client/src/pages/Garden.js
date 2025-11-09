@@ -3,13 +3,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 import Fruit from '../components/Fruit';
 import FlowerField from '../components/FlowerField';
 import '../styles/Garden.css';
 
 function Garden({ projects, onProjectLiked }) {
+    const location = useLocation();
     const [selectedProject, setSelectedProject] = useState(null);
     const [scrollProgress, setScrollProgress] = useState(0);
+    const [groupingMode, setGroupingMode] = useState('projectType'); // Lift state for scroll reset
+    const [highlightedProjectId, setHighlightedProjectId] = useState(null);
     const gardenRef = useRef(null);
     
     // Debug: Log projects to verify data
@@ -38,13 +42,122 @@ function Garden({ projects, onProjectLiked }) {
         initUnicornStudio();
     }, []);
     
+    // Handle navigation from Shelf page with project highlight
+    useEffect(() => {
+        if (location.state?.highlightProjectId) {
+            const projectId = location.state.highlightProjectId;
+            setHighlightedProjectId(projectId);
+            
+            console.log('🎯 NAV: Navigating to highlight project:', projectId, '(', typeof projectId, ')');
+            
+            // Wait for component to fully render and D3 simulation to initialize
+            setTimeout(() => {
+                const flowerFieldContainer = document.querySelector('.flower-field-container');
+                const flowerField = flowerFieldContainer?.querySelector('.flower-field');
+                const svg = flowerField?.querySelector('svg');
+                
+                if (!flowerFieldContainer || !flowerField || !svg) {
+                    console.error('❌ Missing DOM elements for flower field');
+                    return;
+                }
+                
+                // Find the highlighted flower's position
+                const flowerGroups = svg.querySelectorAll('.flower-group');
+                let targetFlower = null;
+                
+                flowerGroups.forEach((group, index) => {
+                    const transform = group.getAttribute('transform');
+                    const projectData = group.__data__?.project;
+                    const isProject = group.__data__?.isProject;
+                    
+                    if (!isProject || !projectData) return;
+                    
+                    // Check both id and _id properties
+                    const dataId = projectData.id || projectData._id;
+                    
+                    // Find the source project to get its name for additional matching
+                    const sourceProject = projects.find(p => (p.id || p._id) === projectId);
+                    
+                    // Try multiple comparison methods for maximum compatibility
+                    const isMatch = (
+                        dataId === projectId || 
+                        String(dataId) === String(projectId) || 
+                        Number(dataId) === Number(projectId) ||
+                        (projectData.id && projectData.id === projectId) ||
+                        (projectData._id && projectData._id === projectId) ||
+                        // Also try matching by project name as fallback
+                        (sourceProject && projectData.projectName === sourceProject.projectName)
+                    );
+                    
+                    if (isMatch) {
+                        console.log('✅ Found matching flower:', projectData.projectName);
+                        // Extract x position from transform="translate(x, y)"
+                        const match = transform.match(/translate\(([^,]+),/);
+                        if (match) {
+                            const flowerX = parseFloat(match[1]);
+                            targetFlower = { x: flowerX, element: group };
+                        }
+                    }
+                });
+                
+                if (!targetFlower) {
+                    console.warn('⚠️ Could not locate flower for project ID:', projectId);
+                    // Still scroll to the section so user can see the garden
+                    flowerFieldContainer.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                    return;
+                }
+                
+                // Scroll vertically to flower field section
+                flowerFieldContainer.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                
+                // Pan horizontally to show the flower
+                const viewportWidth = window.innerWidth;
+                const flowerFieldWidth = flowerField.offsetWidth;
+                const maxTranslate = -(flowerFieldWidth - viewportWidth);
+                
+                // Calculate translation to center the flower in viewport
+                // Flower is at targetFlower.x, we want it at viewportWidth/2
+                let targetTranslateX = -(targetFlower.x - viewportWidth / 2);
+                
+                // Clamp to valid range
+                targetTranslateX = Math.max(maxTranslate, Math.min(0, targetTranslateX));
+                
+                // Apply translation with smooth transition
+                flowerField.style.transition = 'transform 1s ease-out';
+                flowerField.style.transform = `translateX(${targetTranslateX}px)`;
+                
+                // Remove transition after animation completes
+                setTimeout(() => {
+                    flowerField.style.transition = '';
+                }, 1000);
+                
+                // Clear highlight after a few seconds
+                setTimeout(() => {
+                    setHighlightedProjectId(null);
+                }, 4000);
+            }, 1200); // Increased timeout to give D3 more time to initialize
+        }
+    }, [location, projects]);
+    
     // Background transition + Scroll-jacking for flower field horizontal panning
     useEffect(() => {
-        const flowerField = document.querySelector('.flower-field');
+        const flowerFieldContainer = document.querySelector('.flower-field-container');
+        if (!flowerFieldContainer) return;
+        
+        const flowerField = flowerFieldContainer.querySelector('.flower-field');
         if (!flowerField) return;
         
-        const flowerFieldParent = flowerField.parentElement;
-        if (!flowerFieldParent) return;
+        const gardenPage = document.querySelector('.garden-page');
+        if (!gardenPage) return;
+        
+        // CRITICAL: Initialize flower field at leftmost position (translateX(0))
+        flowerField.style.transform = 'translateX(0)';
         
         let isInFlowerSection = false;
         let flowerScrollProgress = 0; // 0 to 1
@@ -54,10 +167,10 @@ function Garden({ projects, onProjectLiked }) {
         const getDimensions = () => {
             const viewportHeight = window.innerHeight;
             const viewportWidth = window.innerWidth;
-            const pageHeight = flowerFieldParent.offsetHeight;
-            const flowerFieldHeight = flowerField.offsetHeight;
-            const flowerFieldTop = pageHeight - flowerFieldHeight;
-            const scrollStart = Math.max(0, flowerFieldTop - viewportHeight + flowerFieldHeight);
+            const pageHeight = gardenPage.offsetHeight;
+            const containerHeight = flowerFieldContainer.offsetHeight;
+            const containerTop = pageHeight - containerHeight;
+            const scrollStart = Math.max(0, containerTop - viewportHeight + containerHeight);
             const flowerFieldWidth = flowerField.offsetWidth;
             const overflowWidth = flowerFieldWidth - viewportWidth;
             
@@ -66,7 +179,7 @@ function Garden({ projects, onProjectLiked }) {
                 viewportWidth,
                 scrollStart,
                 overflowWidth,
-                flowerFieldTop
+                containerTop
             };
         };
         
@@ -88,6 +201,8 @@ function Garden({ projects, onProjectLiked }) {
                 isInFlowerSection = true;
                 lockedScrollPosition = scrollPosition;
                 flowerScrollProgress = 0;
+                // Ensure we start at leftmost position
+                flowerField.style.transform = 'translateX(0)';
             }
             
             // If not in flower section yet, keep flower field at start position
@@ -96,7 +211,7 @@ function Garden({ projects, onProjectLiked }) {
             }
         };
         
-        // Handle wheel events for scroll-jacking in flower section with looping
+        // Handle wheel events for scroll-jacking in flower section (linear, no loop)
         const handleWheel = (e) => {
             dimensions = getDimensions();
             const scrollPosition = window.scrollY;
@@ -113,7 +228,7 @@ function Garden({ projects, onProjectLiked }) {
                     flowerScrollProgress = 0;
                 }
                 
-                // Check for exit condition (only when scrolling up at leftmost)
+                // Check for exit condition: scrolling up at leftmost
                 if (isScrollingUp && flowerScrollProgress <= 0) {
                     // User wants to scroll up and is at leftmost - exit flower section
                     isInFlowerSection = false;
@@ -121,7 +236,15 @@ function Garden({ projects, onProjectLiked }) {
                     return; // Exit handler to allow normal scroll
                 }
                 
-                // Otherwise, capture all scroll events for panning/looping
+                // Check for exit condition: scrolling down at rightmost
+                if (isScrollingDown && flowerScrollProgress >= 1) {
+                    // User wants to scroll down and is at rightmost - exit flower section
+                    isInFlowerSection = false;
+                    // Don't prevent default - allow normal downward scroll
+                    return; // Exit handler to allow normal scroll
+                }
+                
+                // Capture scroll events for horizontal panning
                 e.preventDefault();
                 
                 // Convert wheel delta to scroll progress
@@ -132,21 +255,10 @@ function Garden({ projects, onProjectLiked }) {
                 
                 flowerScrollProgress += delta;
                 
-                // Handle looping when scrolling down past rightmost
-                if (flowerScrollProgress >= 1) {
-                    // Loop back to start seamlessly
-                    // Carry over any excess scroll progress for smooth continuation
-                    const excess = flowerScrollProgress - 1;
-                    flowerScrollProgress = excess;
-                    
-                    // Note: No visual transition needed - the modulo effect creates seamless loop
-                    // The transform will be recalculated below with the new progress value
-                }
+                // Clamp progress between 0 and 1 (no looping)
+                flowerScrollProgress = Math.max(0, Math.min(1, flowerScrollProgress));
                 
-                // Clamp progress for scrolling up (can't go below 0)
-                flowerScrollProgress = Math.max(0, flowerScrollProgress);
-                
-                // Apply horizontal translation
+                // Apply horizontal translation (only to flower-field, not the toggle buttons)
                 const translateX = -(flowerScrollProgress * dimensions.overflowWidth);
                 flowerField.style.transform = `translateX(${translateX}px)`;
                 
@@ -182,7 +294,7 @@ function Garden({ projects, onProjectLiked }) {
             window.removeEventListener('wheel', handleWheel);
             window.removeEventListener('resize', handleResize);
         };
-    }, []);
+    }, [groupingMode]); // Reset scroll position when grouping changes
     
     // Create floating particles effect
     useEffect(() => {
@@ -259,8 +371,12 @@ function Garden({ projects, onProjectLiked }) {
             {/* Hero Section - Above the Fold */}
             <div className="hero-section">
                 <h1 className="hero-title">Innovation garden</h1>
-                <button className="hero-button" onClick={handleEnterGarden}>
-                    Enter the garden
+                <button className="enter-garden-button" onClick={handleEnterGarden}>
+                    <svg className="svgIcon" viewBox="0 0 384 512">
+                        <path
+                            d="M169.4 470.6c12.5 12.5 32.8 12.5 45.3 0l160-160c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L224 370.8 224 64c0-17.7-14.3-32-32-32s-32 14.3-32 32l0 306.7L54.6 265.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3l160 160z"
+                        ></path>
+                    </svg>
                 </button>
             </div>
             
@@ -270,6 +386,9 @@ function Garden({ projects, onProjectLiked }) {
             <FlowerField 
                 projects={projects}
                 onFlowerClick={handleFruitClick}
+                groupingMode={groupingMode}
+                onGroupingChange={setGroupingMode}
+                highlightedProjectId={highlightedProjectId}
             />
             
             {/* Show empty state if no projects */}

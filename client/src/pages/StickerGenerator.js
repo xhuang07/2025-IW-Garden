@@ -2,12 +2,15 @@
 // Page for generating fruit stickers from project uploads
 
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Sticker from '../components/Sticker';
 import { generateFruitType } from '../utils/fruitGenerator';
 import '../styles/StickerGenerator.css';
 
 function StickerGenerator({ onProjectAdded }) {
+    const navigate = useNavigate();
+    
     const [formData, setFormData] = useState({
         projectName: '',
         location: '',
@@ -22,6 +25,7 @@ function StickerGenerator({ onProjectAdded }) {
     const [generatedSticker, setGeneratedSticker] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [plantedProjectId, setPlantedProjectId] = useState(null);
     
     const fileInputRef = useRef(null);
     const stickerRef = useRef(null);
@@ -37,6 +41,19 @@ function StickerGenerator({ onProjectAdded }) {
         'Excited', 'Inspired', 'Energized', 'Empowered', 'Motivated',
         'Refreshed', 'Invigorated', 'Charged', 'Enlightened', 'Transformed'
     ];
+    
+    // Animal names for auto-generation
+    const animals = [
+        'Bear', 'Giraffe', 'Owl', 'Fox', 'Wolf', 'Deer', 'Eagle', 
+        'Penguin', 'Lion', 'Tiger', 'Elephant', 'Dolphin', 'Panda',
+        'Koala', 'Hawk', 'Raven', 'Leopard', 'Cheetah', 'Otter', 'Falcon'
+    ];
+    
+    // Generate random animal name
+    const generateAnimalName = () => {
+        const randomAnimal = animals[Math.floor(Math.random() * animals.length)];
+        return `Anonymous ${randomAnimal}`;
+    };
     
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -85,6 +102,9 @@ function StickerGenerator({ onProjectAdded }) {
         
         setIsGenerating(true);
         
+        // Auto-generate animal name if creator field is empty
+        const finalCreator = formData.creator || generateAnimalName();
+        
         // Generate sticker if not already generated
         if (!generatedSticker) {
             generateSticker();
@@ -94,28 +114,49 @@ function StickerGenerator({ onProjectAdded }) {
         const uploadData = new FormData();
         uploadData.append('projectName', formData.projectName);
         uploadData.append('location', formData.location);
-        uploadData.append('creator', formData.creator || 'Anonymous Gardener');
+        uploadData.append('creator', finalCreator);
         uploadData.append('projectLink', formData.projectLink);
-        uploadData.append('fruitType', generatedSticker?.fruitType || 'apple');
+        uploadData.append('fruitType', generatedSticker?.fruitType || 'shape1');
         uploadData.append('stickerColor', generatedSticker?.color || '#FEA57D');
+        uploadData.append('projectAdjective', formData.madLibAdjective || '');
+        uploadData.append('projectFeeling', formData.madLibFeeling || '');
         
         if (screenshot) {
             uploadData.append('screenshot', screenshot);
         }
         
         try {
+            console.log('📤 SUBMIT: Sending project data to server...');
+            console.log('📤 SUBMIT: Form data values:', {
+                projectName: formData.projectName,
+                location: formData.location,
+                creator: finalCreator,
+                projectLink: formData.projectLink,
+                madLibAdjective: formData.madLibAdjective,
+                madLibFeeling: formData.madLibFeeling,
+                fruitType: generatedSticker?.fruitType,
+                stickerColor: generatedSticker?.color
+            });
+            
             const response = await fetch('http://localhost:5000/api/projects', {
                 method: 'POST',
                 body: uploadData
             });
             
+            console.log('📤 SUBMIT: Response status:', response.status);
             const data = await response.json();
+            console.log('📤 SUBMIT: Response data:', data);
             
             if (data.success) {
+                console.log('✅ SUBMIT: Project planted successfully!', data.project);
                 onProjectAdded(data.project);
+                
+                // Store the planted project ID for "See in Garden" button
+                const projectId = data.project.id || data.project._id;
+                setPlantedProjectId(projectId);
                 setShowSuccess(true);
                 
-                // Reset form after 3 seconds
+                // Reset form after 5 seconds (increased to give time to click "See in Garden")
                 setTimeout(() => {
                     setFormData({
                         projectName: '',
@@ -129,10 +170,14 @@ function StickerGenerator({ onProjectAdded }) {
                     setPreviewUrl(null);
                     setGeneratedSticker(null);
                     setShowSuccess(false);
-                }, 3000);
+                    setPlantedProjectId(null);
+                }, 5000);
+            } else {
+                console.error('❌ SUBMIT: Server returned error:', data);
+                alert(data.message || 'Failed to plant project');
             }
         } catch (error) {
-            console.error('Error creating project:', error);
+            console.error('❌ SUBMIT: Error creating project:', error);
             alert('Failed to plant project in garden');
         } finally {
             setIsGenerating(false);
@@ -154,8 +199,8 @@ function StickerGenerator({ onProjectAdded }) {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
             >
-                <h1>🍎 Plant Your Project</h1>
-                <p>Turn your innovation into a fresh fruit sticker!</p>
+                {/* <h1>🍎 Plant Your Project</h1> */}
+                {/* <p>Turn your innovation into a fresh fruit sticker!</p> */}
             </motion.div>
             
             <div className="generator-container">
@@ -168,42 +213,82 @@ function StickerGenerator({ onProjectAdded }) {
                     <form onSubmit={handleSubmit} className="project-form">
                         <h2>📝 Project Details</h2>
                         
-                        <div className="form-group">
-                            <label>Project Name *</label>
-                            <input
-                                type="text"
-                                name="projectName"
-                                value={formData.projectName}
-                                onChange={handleInputChange}
-                                placeholder="My Amazing Innovation"
-                                required
-                            />
+                        {/* Mad Libs Typography-Heavy Section */}
+                        <div className="mad-libs-statement">
+                            <div className="statement-line">
+                                <span className="statement-text">I grow </span>
+                                <input
+                                    type="text"
+                                    name="projectName"
+                                    value={formData.projectName}
+                                    onChange={handleInputChange}
+                                    placeholder="My Amazing Innovation"
+                                    className="inline-input project-name-input"
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="statement-line">
+                                <span className="statement-text">in </span>
+                                <input
+                                    type="text"
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleInputChange}
+                                    placeholder="Innovation Lab, Building A"
+                                    className="inline-input location-input"
+                                    required
+                                />
+                                <span className="statement-text">,</span>
+                            </div>
+                            
+                            <div className="statement-line">
+                                <span className="statement-text">it is </span>
+                                <select
+                                    name="madLibAdjective"
+                                    value={formData.madLibAdjective}
+                                    onChange={handleInputChange}
+                                    className="inline-select"
+                                >
+                                    <option value="">adjective</option>
+                                    {adjectives.map(adj => (
+                                        <option key={adj} value={adj}>{adj}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            
+                            <div className="statement-line">
+                                <span className="statement-text">and makes me feel </span>
+                                <select
+                                    name="madLibFeeling"
+                                    value={formData.madLibFeeling}
+                                    onChange={handleInputChange}
+                                    className="inline-select"
+                                >
+                                    <option value="">feeling</option>
+                                    {feelings.map(feel => (
+                                        <option key={feel} value={feel}>{feel}</option>
+                                    ))}
+                                </select>
+                                <span className="statement-text">.</span>
+                            </div>
                         </div>
                         
-                        <div className="form-group">
-                            <label>Location *</label>
-                            <input
-                                type="text"
-                                name="location"
-                                value={formData.location}
-                                onChange={handleInputChange}
-                                placeholder="Innovation Lab, Building A"
-                                required
-                            />
-                        </div>
-                        
-                        <div className="form-group">
-                            <label>Your Name (Optional)</label>
+                        {/* Attribution Line */}
+                        <div className="attribution-line">
+                            <span className="attribution-text">By </span>
                             <input
                                 type="text"
                                 name="creator"
                                 value={formData.creator}
                                 onChange={handleInputChange}
                                 placeholder="Anonymous Gardener"
+                                className="inline-input attribution-input"
                             />
                         </div>
                         
-                        <div className="form-group">
+                        {/* Project Link - Secondary */}
+                        <div className="form-group secondary-field">
                             <label>Project Link</label>
                             <input
                                 type="url"
@@ -212,39 +297,6 @@ function StickerGenerator({ onProjectAdded }) {
                                 onChange={handleInputChange}
                                 placeholder="https://..."
                             />
-                        </div>
-                        
-                        <div className="mad-libs-section">
-                            <h3>🎲 Mad Libs (Choose Your Fruit!)</h3>
-                            <p>My project is...</p>
-                            
-                            <div className="mad-libs-row">
-                                <select
-                                    name="madLibAdjective"
-                                    value={formData.madLibAdjective}
-                                    onChange={handleInputChange}
-                                    className="mad-lib-select"
-                                >
-                                    <option value="">Select adjective...</option>
-                                    {adjectives.map(adj => (
-                                        <option key={adj} value={adj}>{adj}</option>
-                                    ))}
-                                </select>
-                                
-                                <span>and makes me feel</span>
-                                
-                                <select
-                                    name="madLibFeeling"
-                                    value={formData.madLibFeeling}
-                                    onChange={handleInputChange}
-                                    className="mad-lib-select"
-                                >
-                                    <option value="">Select feeling...</option>
-                                    {feelings.map(feel => (
-                                        <option key={feel} value={feel}>{feel}</option>
-                                    ))}
-                                </select>
-                            </div>
                         </div>
                         
                         <div className="form-group">
@@ -325,7 +377,13 @@ function StickerGenerator({ onProjectAdded }) {
                         >
                             <span className="success-emoji">🎉</span>
                             <h3>Project Planted Successfully!</h3>
-                            <p>Visit the garden to see your fruit growing!</p>
+                            <p>Your project is now blooming in the garden!</p>
+                            <button 
+                                className="see-in-garden-btn"
+                                onClick={() => navigate('/', { state: { highlightProjectId: plantedProjectId } })}
+                            >
+                                🌸 See it in Garden
+                            </button>
                         </motion.div>
                     )}
                 </motion.div>

@@ -1,13 +1,130 @@
 /* client/src/styles/FlowerField.css */
 /* Scattered flower field layout at the bottom of the page */
 
-.flower-field {
+.flower-field-container {
     position: absolute;
     bottom: 0;
     left: 0;
     width: 150%; /* Allow 1.5x width for horizontal overflow */
-    height: 450px;
+    height: 56.25rem; /* 900px → 56.25rem - Responsive height for toggle UI */
     z-index: 100;
+    pointer-events: none;
+    will-change: transform;
+}
+
+/* Grouping Toggle UI - Neobrutalism Radio Style */
+.flower-grouping-toggle {
+    position: absolute;
+    top: 5%;
+    left: 35%;
+    transform: translateX(-50%);
+    z-index: 150;
+    pointer-events: all;
+    animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.toggle-wrapper {
+    --font-color-dark: #323232;
+    --font-color-light: #fff;
+    --bg-color: #fff;
+    --main-color: #323232;
+    --secondary-color: #D28664;
+    position: relative;
+    width: fit-content;
+    min-width: 28.125rem; /* 450px → 28.125rem */
+    height: 4rem; /* 36px → 2.25rem */
+    background-color: var(--bg-color);
+    border: 2px solid var(--main-color);
+    border-radius: 2.125rem; /* 34px → 2.125rem */
+    display: flex;
+    flex-direction: row;
+    box-shadow: 4px 4px var(--main-color);
+}
+
+.toggle-option {
+    flex: 1;
+    margin-right: 0.3125rem; /* 5px → 0.3125rem */
+    height: 3.5rem; /* 28px → 1.75rem */
+    width: fit-content;
+    position: relative;
+    top: 0.125rem; /* 2px → 0.125rem */
+    left: 0.125rem;
+    border-radius: 2.125rem;
+    transition: 0.25s cubic-bezier(0, 0, 0, 1);
+}
+
+.toggle-option:last-child {
+    margin-right: 0.25rem; /* 4px → 0.25rem */
+    width: fit-content;
+
+}
+
+.toggle-option:hover {
+    background-color: var(--secondary-color);
+}
+
+.toggle-option:hover .toggle-span {
+    color: var(--font-color-light);
+}
+
+.toggle-input {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    appearance: none;
+    cursor: pointer;
+    margin: 0;
+}
+
+.toggle-btn {
+    width: 100%;
+    height: 100%;
+    border-radius: 3.125rem; /* 50px → 3.125rem */
+    padding-left: 2rem;
+    padding-right: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+}
+
+.toggle-span {
+    color: var(--font-color-dark);
+    font-size: 1.5rem; /* 14px → 0.875rem */
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.toggle-input:checked + .toggle-btn {
+    background-color: var(--main-color);
+    transition: 0.2s cubic-bezier(0, 0, 0, 1);
+}
+
+.toggle-input:checked + .toggle-btn .toggle-span {
+    color: var(--font-color-light);
+    transition: 0.25s cubic-bezier(0, 0, 0, 1);
+}
+
+.flower-field {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 150%; /* CRITICAL: Must be 150% to create horizontal overflow for scroll-to-translate */
+    height: 700px;
+    padding-top: 1rem;
     padding-bottom: 2rem;
     pointer-events: none;
     will-change: transform;
@@ -18,7 +135,7 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 150%;
     height: 100%;
     pointer-events: all;
 }
@@ -103,9 +220,21 @@
 
 /* Responsive behavior - Tablet (768px and below) */
 @media (max-width: 48rem) {
+    .flower-field-container {
+        height: 900px;
+    }
+    
     .flower-field {
-        height: 350px;
+        height: 700px;
         padding-bottom: 1.5rem;
+    }
+    
+    .toggle-wrapper {
+        min-width: 25rem; /* 400px → 25rem */
+    }
+    
+    .toggle-span {
+        font-size: 0.75rem; /* 12px → 0.75rem */
     }
     
     /* Hide some flowers on tablet for less density */
@@ -133,9 +262,27 @@
 
 /* Responsive behavior - Mobile (480px and below) */
 @media (max-width: 30rem) {
+    .flower-field-container {
+        height: 900px;
+    }
+    
     .flower-field {
-        height: 280px;
+        height: 700px;
         padding-bottom: 1rem;
+    }
+    
+    .toggle-wrapper {
+        min-width: 20rem; /* 320px → 20rem */
+        width: 90%;
+        height: 2.125rem; /* 34px → 2.125rem */
+    }
+    
+    .toggle-span {
+        font-size: 0.6875rem; /* 11px → 0.6875rem */
+    }
+    
+    .toggle-option {
+        height: 1.625rem; /* 26px → 1.625rem */
     }
     
     /* Hide additional flowers on mobile */
@@ -165,9 +312,27 @@
 
 /* Very small screens (360px and below) */
 @media (max-width: 22.5rem) {
+    .flower-field-container {
+        height: 900px;
+    }
+    
     .flower-field {
-        height: 230px;
-        padding-bottom: 0.75rem;
+        height: 700px;
+        padding-bottom: 1rem;
+    }
+    
+    .toggle-wrapper {
+        min-width: 18rem; /* 288px → 18rem */
+        width: 95%;
+        height: 2rem; /* 32px → 2rem */
+    }
+    
+    .toggle-span {
+        font-size: 0.625rem; /* 10px → 0.625rem */
+    }
+    
+    .toggle-option {
+        height: 1.5rem; /* 24px → 1.5rem */
     }
     
     .flower-large {
@@ -184,5 +349,15 @@
         width: 55px;
         height: 55px;
     }
+}
+
+/* Highlighted flower styles */
+.flower-group.highlighted {
+    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+    z-index: 1000 !important;
+}
+
+.highlight-ring {
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
 }
 

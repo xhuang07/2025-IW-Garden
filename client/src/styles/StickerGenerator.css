@@ -10,7 +10,7 @@
 /* Generator header */
 .generator-header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 8rem;
     color: #2c3e50;
 }
 
@@ -32,19 +32,26 @@
 
 /* Generator container */
 .generator-container {
-    max-width: 87.5rem; /* 1400px → 87.5rem */
+    width: 100%;
+    max-width: 100%;
     margin: 0 auto;
+    padding: 0 2rem;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 2fr 1fr; /* 2/3 and 1/3 split */
     gap: 2rem;
 }
 
 /* Form section */
 .form-section {
-    background: white;
-    border-radius: 1.25rem; /* 20px → 1.25rem */
+    background: #ffffff;
+    border-radius: 24px;
     padding: 2rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    border: 2px solid #323232;
+    box-shadow: 4px 4px #323232;
+    /* background: white;
+    border-radius: 1.25rem; /* 20px → 1.25rem */
+    /* padding: 2rem; */
+    /* box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); */
 }
 
 .form-section h2 {
@@ -90,57 +97,156 @@
     color: #bdc3c7;
 }
 
-/* Mad Libs section */
-.mad-libs-section {
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    padding: 1.5rem;
-    border-radius: 0.75rem; /* 12px → 0.75rem */
-    margin: 1rem 0;
+/* Mad Libs Typography-Heavy Statement */
+.mad-libs-statement {
+    margin: 2rem 0 1.5rem 0;
+    padding: 2rem 1.5rem;
+    background: linear-gradient(135deg, #fdfbfb 0%, #f7f7f7 100%);
+    border-radius: 1rem;
+    line-height: 1.8;
 }
 
-.mad-libs-section h3 {
-    margin: 0 0 1rem 0;
-    color: #2c3e50;
-    font-size: clamp(1.125rem, 1rem + 0.25vw, 1.25rem); /* Fluid heading */
-}
-
-.mad-libs-section p {
-    color: #7f8c8d;
-    margin-bottom: 1rem;
-    font-weight: 500;
-}
-
-.mad-libs-row {
+.statement-line {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+    gap: 0.5rem;
 }
 
-.mad-libs-row span {
+.statement-text {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: clamp(1.5rem, 1.25rem + 1vw, 2.5rem);
+    font-weight: 700;
+    color: #1a1a1a;
+    letter-spacing: -0.02em;
+    line-height: 1.4;
+}
+
+/* Inline inputs that blend into typography */
+.inline-input {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: clamp(1.5rem, 1.25rem + 1vw, 2.5rem);
+    font-weight: 700;
     color: #2c3e50;
-    font-weight: 500;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid #667eea;
+    padding: 0.25rem 0.5rem;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    flex: 0 1 auto;
 }
 
-.mad-lib-select {
-    padding: 0.75rem 1rem;
-    border: 2px solid #e0e0e0;
-    border-radius: 0.5rem; /* 8px → 0.5rem */
+.inline-input:focus {
+    outline: none;
+    border-bottom-color: #764ba2;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.inline-input::placeholder {
+    color: #bdc3c7;
+    font-style: italic;
+    font-weight: 400;
+}
+
+.project-name-input {
+    min-width: 250px;
+}
+
+.location-input {
+    min-width: 300px;
+}
+
+/* Inline selects styled to match typography */
+.inline-select {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: clamp(1.5rem, 1.25rem + 1vw, 2.5rem);
+    font-weight: 700;
+    color: #667eea;
     background: white;
-    font-size: 1rem;
+    border: none;
+    border-bottom: 3px solid #667eea;
+    padding: 0.25rem 0.5rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    min-width: 9.375rem; /* 150px → 9.375rem */
+    text-decoration: underline;
+    text-decoration-style: wavy;
+    text-decoration-color: #667eea;
+    min-width: 180px;
 }
 
-.mad-lib-select:hover {
-    border-color: #667eea;
+.inline-select:hover {
+    background: rgba(102, 126, 234, 0.05);
 }
 
-.mad-lib-select:focus {
+.inline-select:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-bottom-color: #764ba2;
+    text-decoration-color: #764ba2;
+}
+
+.inline-select option {
+    font-size: 1rem;
+    font-weight: 400;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Attribution line */
+.attribution-line {
+    margin: 2rem 0 2rem 0;
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding-left: 1.5rem;
+}
+
+.attribution-text {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
+    font-weight: 600;
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+.attribution-input {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
+    font-weight: 600;
+    color: #2c3e50;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #bdc3c7;
+    padding: 0.25rem 0.5rem;
+    min-width: 200px;
+    font-style: italic;
+}
+
+.attribution-input:focus {
+    outline: none;
+    border-bottom-color: #667eea;
+    background: rgba(102, 126, 234, 0.03);
+}
+
+.attribution-input::placeholder {
+    color: #bdc3c7;
+}
+
+/* Secondary fields (project link) */
+.secondary-field {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.secondary-field label {
+    font-size: 0.875rem;
+    color: #7f8c8d;
+}
+
+.secondary-field input {
+    font-size: 0.9375rem;
 }
 
 /* File upload area */
@@ -330,10 +436,41 @@
     opacity: 0.95;
 }
 
+.see-in-garden-btn {
+    margin-top: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: white;
+    color: #11998e;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.see-in-garden-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    background: #f8f9fa;
+}
+
+.see-in-garden-btn:active {
+    transform: translateY(0);
+}
+
 /* Responsive design */
-@media (max-width: 64rem) { /* 1024px */
+@media (max-width: 80rem) { /* 1280px - adjust 2/3-1/3 split at this breakpoint */
+    .generator-container {
+        padding: 0 1.5rem;
+    }
+}
+
+@media (max-width: 64rem) { /* 1024px - stack vertically */
     .generator-container {
         grid-template-columns: 1fr;
+        padding: 0 1rem;
     }
     
     .preview-section {
@@ -354,17 +491,47 @@
         padding: 1.5rem;
     }
     
-    .mad-libs-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .mad-lib-select {
-        width: 100%;
-    }
-    
     .form-actions {
         flex-direction: column;
+    }
+    
+    /* Mad Libs responsive adjustments */
+    .mad-libs-statement {
+        padding: 1.5rem 1rem;
+    }
+    
+    .statement-line {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+        gap: 0.25rem;
+    }
+    
+    .statement-text {
+        font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    }
+    
+    .inline-input {
+        font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .inline-select {
+        font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .attribution-line {
+        flex-direction: column;
+        align-items: flex-start;
+        padding-left: 1rem;
+    }
+    
+    .attribution-input {
+        width: 100%;
+        min-width: unset;
     }
 }
 
