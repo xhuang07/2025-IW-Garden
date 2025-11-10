@@ -8,7 +8,7 @@ The flower field implements a modern "scroll-to-translate" effect where **vertic
 
 ### User Experience
 
-1. **Initial State**: User sees hero section with "Innovation garden" title
+1. **Initial State**: User sees hero section with "Ideas Garden" title
 2. **Scroll Down**: User scrolls down normally (vertical scroll)
 3. **Flower Field Enters**: As flower field comes into view, it starts at leftmost position
 4. **Continued Scrolling**: As user continues scrolling down, flower field translates left

@@ -26,9 +26,12 @@ function StickerGenerator({ onProjectAdded }) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [plantedProjectId, setPlantedProjectId] = useState(null);
+    const [locationSuggestions, setLocationSuggestions] = useState([]);
+    const [showLocationDropdown, setShowLocationDropdown] = useState(false);
     
     const fileInputRef = useRef(null);
     const stickerRef = useRef(null);
+    const locationInputRef = useRef(null);
     
     // Mad Libs options
     const adjectives = [
@@ -40,6 +43,20 @@ function StickerGenerator({ onProjectAdded }) {
     const feelings = [
         'Excited', 'Inspired', 'Energized', 'Empowered', 'Motivated',
         'Refreshed', 'Invigorated', 'Charged', 'Enlightened', 'Transformed'
+    ];
+    
+    // Popular cities for autocomplete
+    const cities = [
+        'San Francisco', 'San Jose', 'San Diego', 'Santa Clara', 'Santa Monica',
+        'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix',
+        'Philadelphia', 'San Antonio', 'Dallas', 'Austin', 'Jacksonville',
+        'Fort Worth', 'Columbus', 'Charlotte', 'Indianapolis', 'Seattle',
+        'Denver', 'Washington DC', 'Boston', 'Nashville', 'Detroit',
+        'Portland', 'Las Vegas', 'Memphis', 'Louisville', 'Baltimore',
+        'Milwaukee', 'Albuquerque', 'Tucson', 'Fresno', 'Sacramento',
+        'Kansas City', 'Mesa', 'Atlanta', 'Omaha', 'Colorado Springs',
+        'Raleigh', 'Miami', 'Oakland', 'Minneapolis', 'Tulsa',
+        'Cleveland', 'Wichita', 'Arlington', 'Tampa', 'New Orleans'
     ];
     
     // Animal names for auto-generation
@@ -61,6 +78,42 @@ function StickerGenerator({ onProjectAdded }) {
             ...prev,
             [name]: value
         }));
+    };
+    
+    const handleLocationChange = (e) => {
+        const value = e.target.value;
+        setFormData(prev => ({
+            ...prev,
+            location: value
+        }));
+        
+        // Filter cities based on input
+        if (value.length > 0) {
+            const filtered = cities.filter(city =>
+                city.toLowerCase().startsWith(value.toLowerCase())
+            );
+            setLocationSuggestions(filtered);
+            setShowLocationDropdown(filtered.length > 0);
+        } else {
+            setLocationSuggestions([]);
+            setShowLocationDropdown(false);
+        }
+    };
+    
+    const handleLocationSelect = (city) => {
+        setFormData(prev => ({
+            ...prev,
+            location: city
+        }));
+        setShowLocationDropdown(false);
+        setLocationSuggestions([]);
+    };
+    
+    const handleLocationBlur = () => {
+        // Delay hiding to allow click on suggestion
+        setTimeout(() => {
+            setShowLocationDropdown(false);
+        }, 200);
     };
     
     const handleFileChange = (e) => {
@@ -85,7 +138,7 @@ function StickerGenerator({ onProjectAdded }) {
             projectName: formData.projectName,
             location: formData.location,
             creator: formData.creator || 'Anonymous Gardener',
-            text: `I grow ${formData.projectName} in ${formData.location}`,
+            text: `I'm growing ${formData.projectName} in ${formData.location}`,
             date: new Date().toLocaleDateString()
         };
         
@@ -211,80 +264,99 @@ function StickerGenerator({ onProjectAdded }) {
                     transition={{ delay: 0.2 }}
                 >
                     <form onSubmit={handleSubmit} className="project-form">
-                        <h2>📝 Project Details</h2>
+                        <h2>🪴 Plant details</h2>
                         
                         {/* Mad Libs Typography-Heavy Section */}
                         <div className="mad-libs-statement">
                             <div className="statement-line">
-                                <span className="statement-text">I grow </span>
+                                <span className="statement-text">I'm growing </span>
                                 <input
                                     type="text"
                                     name="projectName"
                                     value={formData.projectName}
                                     onChange={handleInputChange}
-                                    placeholder="My Amazing Innovation"
+                                    placeholder="my next fun idea"
                                     className="inline-input project-name-input"
                                     required
                                 />
+                                <span className="statement-text"> in </span>
+                                <div className="location-autocomplete-wrapper">
+                                    <input
+                                        type="text"
+                                        name="location"
+                                        value={formData.location}
+                                        onChange={handleLocationChange}
+                                        onBlur={handleLocationBlur}
+                                        onFocus={() => {
+                                            if (formData.location && locationSuggestions.length > 0) {
+                                                setShowLocationDropdown(true);
+                                            }
+                                        }}
+                                        ref={locationInputRef}
+                                        placeholder="San Jose"
+                                        className="inline-input location-input"
+                                        required
+                                        autoComplete="off"
+                                    />
+                                    {showLocationDropdown && locationSuggestions.length > 0 && (
+                                        <div className="location-dropdown">
+                                            {locationSuggestions.map((city, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="location-option"
+                                                    onMouseDown={(e) => {
+                                                        e.preventDefault();
+                                                        handleLocationSelect(city);
+                                                    }}
+                                                >
+                                                    {city}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                <span className="statement-text">.</span>
                             </div>
                             
-                            <div className="statement-line">
-                                <span className="statement-text">in </span>
-                                <input
-                                    type="text"
-                                    name="location"
-                                    value={formData.location}
-                                    onChange={handleInputChange}
-                                    placeholder="Innovation Lab, Building A"
-                                    className="inline-input location-input"
-                                    required
-                                />
-                                <span className="statement-text">,</span>
-                            </div>
-                            
-                            <div className="statement-line">
-                                <span className="statement-text">it is </span>
+                            <div className="statement-line second-sentence">
+                                <span className="statement-text">It's </span>
                                 <select
                                     name="madLibAdjective"
                                     value={formData.madLibAdjective}
                                     onChange={handleInputChange}
                                     className="inline-select"
                                 >
-                                    <option value="">adjective</option>
+                                    <option value="">magical</option>
                                     {adjectives.map(adj => (
                                         <option key={adj} value={adj}>{adj}</option>
                                     ))}
                                 </select>
-                            </div>
-                            
-                            <div className="statement-line">
-                                <span className="statement-text">and makes me feel </span>
+                                <span className="statement-text"> and it makes me feel </span>
                                 <select
                                     name="madLibFeeling"
                                     value={formData.madLibFeeling}
                                     onChange={handleInputChange}
                                     className="inline-select"
                                 >
-                                    <option value="">feeling</option>
+                                    <option value="">motivated</option>
                                     {feelings.map(feel => (
                                         <option key={feel} value={feel}>{feel}</option>
                                     ))}
                                 </select>
                                 <span className="statement-text">.</span>
                             </div>
-                        </div>
-                        
-                        {/* Attribution Line */}
-                        <div className="attribution-line">
-                            <span className="attribution-text">By </span>
-                            <input
-                                type="text"
-                                name="creator"
-                                value={formData.creator}
-                                onChange={handleInputChange}
-                                placeholder="Anonymous Gardener"
-                                className="inline-input attribution-input"
-                            />
+                            
+                            <div className="statement-line second-sentence">
+                                <span className="statement-text">By </span>
+                                <input
+                                    type="text"
+                                    name="creator"
+                                    value={formData.creator}
+                                    onChange={handleInputChange}
+                                    placeholder="anonymous gardener"
+                                    className="inline-input"
+                                />
+                            </div>
                         </div>
                         
                         {/* Project Link - Secondary */}
@@ -350,7 +422,7 @@ function StickerGenerator({ onProjectAdded }) {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 }}
                 >
-                    <h2>🏷️ Your Fresh Sticker</h2>
+                    <h2>🏷️ Sticker Preview</h2>
                     
                     <div className="sticker-preview" ref={stickerRef}>
                         {generatedSticker ? (

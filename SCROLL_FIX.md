@@ -156,7 +156,7 @@ scrollEnd                        → translateX(-100%)    → Rightmost
 Page Structure (400vh = 3600px):
 ┌────────────────────────────────┐
 │   Hero Section (100vh)         │  ← 0px - 900px
-│   "Innovation Garden"          │
+│   "Ideas Garden"          │
 ├────────────────────────────────┤
 │                                │
 │   Normal Scroll (200vh)        │  ← 900px - 2700px

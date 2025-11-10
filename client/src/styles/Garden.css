@@ -78,7 +78,7 @@
 .hero-title {
     font-family: "Spalla", sans-serif;
     font-weight: 700;
-    font-size: clamp(3rem, 5vw + 2rem, 8rem); /* Fluid 48px-128px → 3rem-8rem */
+    font-size: clamp(10rem, 5vw + 2rem, 8rem); /* Fluid 48px-128px → 3rem-8rem */
     line-height: normal;
     letter-spacing: -0.16rem; /* -2.56px → -0.16rem */
     color: #000000;
@@ -442,140 +442,446 @@
     opacity: 0.9;
 }
 
-/* Project modal */
-.project-modal-overlay {
+/* Project modal - Draggable Side Panel */
+.project-modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    /* Position will be set via JavaScript on open */
+    
+    width: 33.33vw;
+    max-width: 600px;
+    min-width: 400px;
+    height: 85vh;
+    max-height: calc(100vh - 4rem);
+    
+    background: white;
+    border-radius: 1.25rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    
     z-index: 1000;
-    backdrop-filter: blur(5px);
+    pointer-events: auto;
 }
 
-.project-modal {
-    background: white;
-    border-radius: 20px;
-    padding: 2rem;
-    max-width: 600px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-    position: relative;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+/* Drag Handle */
+.modal-drag-handle {
+    width: 100%;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: grab;
+    background: #F5F5F5;
+    border-radius: 16px 16px 0 0;
+    flex-shrink: 0;
+}
+
+.modal-drag-handle:active {
+    cursor: grabbing;
+}
+
+.drag-handle-dots {
+    display: flex;
+    gap: 4px;
+}
+
+.drag-handle-dots span {
+    width: 4px;
+    height: 4px;
+    background: #999;
+    border-radius: 50%;
+}
+
+/* Header */
+.modal-header-top {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 10;
 }
 
 .modal-close {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: #f8f9fa;
-    border: none;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    width: 2.5rem; /* 40px → 2.5rem */
-    height: 2.5rem;
-    font-size: 1.5rem;
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s;
+    color: #666;
+}
+
+.modal-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    transform: scale(1.1);
+}
+
+/* Navigation */
+.modal-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px;
+    border-bottom: 1px solid #E0E0E0;
+    flex-shrink: 0;
+}
+
+.nav-arrow {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #F5F5F5;
+    border: 1px solid #E0E0E0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #323232;
+}
+
+.nav-arrow:hover:not(:disabled) {
+    background: #EBEBEB;
+    transform: scale(1.05);
+}
+
+.nav-arrow:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.project-counter {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    min-width: 60px;
+    text-align: center;
+}
+
+/* Scrollable Content */
+.modal-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0; /* Remove padding from parent */
+}
+
+/* Custom scrollbar */
+.modal-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #F5F5F5;
+    border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #CCCCCC;
+    border-radius: 3px;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background: #999999;
+}
+
+.modal-content-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px; /* Add padding here to ensure consistent width */
+    width: 100%; /* Ensure full width */
+    box-sizing: border-box; /* Include padding in width calculation */
+    
+    /* Smooth content transition when project changes */
+    animation: fadeInSlide 0.3s ease;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Flower Icon */
+.modal-flower-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.modal-close:hover {
-    background: #e74c3c;
-    color: white;
-    transform: rotate(90deg);
+.modal-flower-icon .fruit {
+    width: 100% !important;
+    height: 100% !important;
 }
 
-.modal-header {
+/* Project Title */
+.modal-project-title {
+    font-size: clamp(1.5rem, 1.25rem + 0.75vw, 1.8rem);
+    font-weight: 700;
+    color: #2c3e50;
     text-align: center;
-    margin-bottom: 2rem;
+    margin: 0 0 2rem 0;
+    width: 100%; /* Ensure full width */
 }
 
-.modal-header .fruit {
-    width: 20% !important;
-    max-width: 120px;
-    margin: 0 auto;
+/* Project Details */
+.modal-project-details {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: #F9F9F9;
+    padding: 16px;
+    border-radius: 8px;
+    width: 100%; /* Ensure full width */
+    box-sizing: border-box; /* Include padding in width calculation */
+    margin: 0; /* Remove any auto margins */
 }
 
-.modal-header h2 {
-    margin-top: 1rem;
-    color: #2c3e50;
-    font-size: clamp(1.5rem, 1.25rem + 1vw, 2rem); /* Fluid heading */
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
 }
 
-.modal-content {
-    color: #2c3e50;
+.detail-icon {
+    font-size: 16px;
+    flex-shrink: 0;
 }
 
-.project-info {
-    background: #f8f9fa;
-    padding: 1.5rem;
-    border-radius: 12px;
-    margin-bottom: 1.5rem;
+.detail-label {
+    font-weight: 600;
+    color: #666;
+    min-width: 80px;
+    flex-shrink: 0;
 }
 
-.project-info p {
-    margin: 0.75rem 0;
-    font-size: 1rem;
+.detail-value {
+    color: #323232;
+    flex: 1;
 }
 
-.project-screenshot {
-    margin: 1.5rem 0;
-    border-radius: 12px;
+/* Screenshot */
+.modal-screenshot {
+    width: 100%;
+    border-radius: 8px;
     overflow: hidden;
+    box-sizing: border-box;
+    margin: 0; /* Remove any auto margins */
 }
 
-.project-screenshot img {
+.modal-screenshot img {
     width: 100%;
     height: auto;
     display: block;
 }
 
-.project-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
+/* Screenshot Upload Area */
+.modal-screenshot-upload {
+    width: 100%;
+    box-sizing: border-box;
+    margin: 0; /* Remove any auto margins */
 }
 
-.like-button,
-.visit-button {
+.screenshot-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    border: 2px dashed #CCCCCC;
+    border-radius: 8px;
+    background: #F9F9F9;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.screenshot-upload-label:hover {
+    border-color: #667EEA;
+    background: #F0F0FF;
+}
+
+.screenshot-upload-label svg {
+    color: #999;
+    margin-bottom: 1rem;
+}
+
+.screenshot-upload-label p {
+    margin: 0 0 0.5rem 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #323232;
+}
+
+.screenshot-upload-label span {
+    font-size: 14px;
+    color: #999;
+}
+
+/* Sticky Actions */
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    padding: 16px 24px;
+    border-top: 1px solid #E0E0E0;
+    background: white;
+    flex-shrink: 0;
+}
+
+.action-btn {
     flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
     border: none;
-    border-radius: 12px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     text-decoration: none;
-    text-align: center;
-    display: block;
-}
-
-.like-button {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     color: white;
 }
 
-.like-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(245, 87, 108, 0.3);
-}
-
-.visit-button {
+/* Primary Action - Most important (Water with Love / Visit Project) */
+.action-btn-like,
+.action-btn-visit {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
 }
 
-.visit-button:hover {
+.action-btn-like:hover,
+.action-btn-visit:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Secondary Action - Supportive action (Add Project Link) */
+.action-btn-add-link {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #2c3e50;
+}
+
+.action-btn-add-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(168, 237, 234, 0.4);
+}
+
+/* Tertiary/Destructive Action - Dangerous action (Delete) */
+.action-btn-delete {
+    background: transparent;
+    border: 2px solid #E0E0E0;
+    color: #FF6B6B;
+}
+
+.action-btn-delete:hover {
+    background: #FF6B6B;
+    color: white;
+    border-color: #FF6B6B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+/* Edit Link Modal */
+.modal-edit-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    backdrop-filter: blur(4px);
+}
+
+.modal-edit-dialog {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-edit-dialog h3 {
+    margin: 0 0 1.5rem 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.modal-edit-input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 14px;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.modal-edit-input:focus {
+    outline: none;
+    border-color: #667EEA;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.modal-edit-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.modal-edit-cancel,
+.modal-edit-save {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-edit-cancel {
+    background: #F0F0F0;
+    color: #666;
+}
+
+.modal-edit-cancel:hover {
+    background: #E0E0E0;
+}
+
+.modal-edit-save {
+    background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+    color: white;
+}
+
+.modal-edit-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 /* Floating heart animation */
@@ -599,6 +905,20 @@
 }
 
 /* Responsive design */
+@media (max-width: 90rem) { /* 1440px */
+    .project-modal {
+        width: 40vw;
+        min-width: 350px;
+    }
+}
+
+@media (max-width: 64rem) { /* 1024px */
+    .project-modal {
+        width: 45vw;
+        min-width: 320px;
+    }
+}
+
 @media (max-width: 48rem) { /* 768px */
     .garden-page {
         padding: 1rem;
@@ -617,12 +937,34 @@
     /* garden-title, title-emoji, and garden-subtitle now use clamp() */
     
     .project-modal {
-        width: 95%;
-        padding: 1.5rem;
+        width: 90vw;
+        height: 80vh;
+        right: 5vw;
+        left: auto;
+        min-width: unset;
     }
     
-    .project-actions {
+    .modal-navigation {
+        padding: 12px;
+        gap: 12px;
+    }
+    
+    .nav-arrow {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .modal-content-inner {
+        padding: 16px;
+    }
+    
+    .modal-actions {
+        padding: 12px 16px;
         flex-direction: column;
+    }
+    
+    .action-btn {
+        width: 100%;
     }
 }
 
@@ -631,6 +973,24 @@
     
     .hero-section {
         gap: 2.5rem; /* 40px → 2.5rem */
+    }
+    
+    .project-modal {
+        width: 95vw;
+        right: 2.5vw;
+    }
+    
+    .modal-project-title {
+        font-size: clamp(1.25rem, 1rem + 0.75vw, 1.5rem);
+    }
+    
+    .detail-label {
+        min-width: 70px;
+        font-size: 13px;
+    }
+    
+    .detail-value {
+        font-size: 13px;
     }
 }
 

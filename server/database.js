@@ -283,11 +283,79 @@ function searchProjects(searchQuery) {
     });
 }
 
+// Delete a project
+function deleteProject(id) {
+    return new Promise((resolve, reject) => {
+        const query = 'DELETE FROM projects WHERE id = ?';
+        
+        db.run(query, [id], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                resolve({ success: true, deletedId: id });
+            }
+        });
+    });
+}
+
+// Update project link
+function updateProjectLink(id, projectLink) {
+    return new Promise((resolve, reject) => {
+        const query = 'UPDATE projects SET projectLink = ? WHERE id = ?';
+        
+        db.run(query, [projectLink, id], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                // Return updated project
+                db.get('SELECT * FROM projects WHERE id = ?', [id], (err, row) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve({
+                            ...row,
+                            stickerData: row.stickerData ? JSON.parse(row.stickerData) : null
+                        });
+                    }
+                });
+            }
+        });
+    });
+}
+
+// Update project screenshot
+function updateProjectScreenshot(id, screenshot) {
+    return new Promise((resolve, reject) => {
+        const query = 'UPDATE projects SET screenshot = ? WHERE id = ?';
+        
+        db.run(query, [screenshot, id], function(err) {
+            if (err) {
+                reject(err);
+            } else {
+                // Return updated project
+                db.get('SELECT * FROM projects WHERE id = ?', [id], (err, row) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve({
+                            ...row,
+                            stickerData: row.stickerData ? JSON.parse(row.stickerData) : null
+                        });
+                    }
+                });
+            }
+        });
+    });
+}
+
 // Export functions
 module.exports = {
     initDB,
     getProjects,
     addProject,
     likeProject,
-    searchProjects
+    searchProjects,
+    deleteProject,
+    updateProjectLink,
+    updateProjectScreenshot
 };

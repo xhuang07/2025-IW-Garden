@@ -156,7 +156,7 @@ function App() {
             return {
                 id: `sample-${index}`,
                 projectName: name,
-                location: 'Innovation Garden',
+                location: 'Ideas Garden',
                 creator: 'ADDX Team',
                 createdAt: new Date().toISOString(),
                 likes: Math.floor(Math.random() * 15),
@@ -289,6 +289,11 @@ function App() {
         showNotification('❤️ Project liked!');
     };
     
+    const handleProjectDeleted = (projectId) => {
+        setProjects(prev => prev.filter(p => p.id !== projectId));
+        showNotification('🗑️ Project removed from garden');
+    };
+    
     const showNotification = (message) => {
         const notification = document.createElement('div');
         notification.className = 'notification';
@@ -333,6 +338,7 @@ function App() {
                                 <Garden 
                                     projects={projects}
                                     onProjectLiked={handleProjectLiked}
+                                    onProjectDeleted={handleProjectDeleted}
                                 />
                             } 
                         />
@@ -350,20 +356,21 @@ function App() {
                                 <Shelf 
                                     projects={projects}
                                     onProjectLiked={handleProjectLiked}
+                                    onProjectDeleted={handleProjectDeleted}
                                 />
                             } 
                         />
                     </Routes>
                 </main>
                 
-                <footer className="app-footer">
+                {/* <footer className="app-footer">
                     <div className="footer-content">
                         <p>🌱 Fresh Takes Innovation Week 2024</p>
                         <p className="footer-quote">
                             "How might we reimagine our portfolio by focusing on the next generation"
                         </p>
                     </div>
-                </footer>
+                </footer> */}
             </div>
         </Router>
     );

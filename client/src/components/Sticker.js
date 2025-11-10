@@ -73,7 +73,7 @@ function Sticker({ data }) {
                     
                     <div className="project-info">
                         <div className="info-text">
-                            {text || `I grow ${projectName} in ${location}`}
+                            {text || `I'm growing ${projectName} in ${location}`}
                         </div>
                         <div className="info-date">{date}</div>
                     </div>

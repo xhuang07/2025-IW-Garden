@@ -228,6 +228,106 @@ app.get('/api/projects/:id', async (req, res) => {
     }
 });
 
+// Delete project
+app.delete('/api/projects/:id', async (req, res) => {
+    try {
+        const projectId = parseInt(req.params.id);
+        
+        if (isNaN(projectId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID'
+            });
+        }
+        
+        const { deleteProject } = require('./database');
+        await deleteProject(projectId);
+        
+        res.json({
+            success: true,
+            message: '🗑️ Project removed from the garden'
+        });
+    } catch (error) {
+        console.error('Error deleting project:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to delete project',
+            error: error.message
+        });
+    }
+});
+
+// Update project link
+app.patch('/api/projects/:id/link', async (req, res) => {
+    try {
+        const projectId = parseInt(req.params.id);
+        const { projectLink } = req.body;
+        
+        if (isNaN(projectId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID'
+            });
+        }
+        
+        const { updateProjectLink } = require('./database');
+        const updatedProject = await updateProjectLink(projectId, projectLink);
+        
+        res.json({
+            success: true,
+            message: '🔗 Project link updated!',
+            project: updatedProject
+        });
+    } catch (error) {
+        console.error('Error updating project link:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to update project link',
+            error: error.message
+        });
+    }
+});
+
+// Update project screenshot
+app.patch('/api/projects/:id/screenshot', upload.single('screenshot'), async (req, res) => {
+    try {
+        const projectId = parseInt(req.params.id);
+        
+        if (isNaN(projectId)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid project ID'
+            });
+        }
+        
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'No screenshot file provided'
+            });
+        }
+        
+        const screenshotPath = '/uploads/' + req.file.filename;
+        
+        const { updateProjectScreenshot } = require('./database');
+        const updatedProject = await updateProjectScreenshot(projectId, screenshotPath);
+        
+        res.json({
+            success: true,
+            message: '📸 Screenshot uploaded!',
+            screenshot: screenshotPath,
+            project: updatedProject
+        });
+    } catch (error) {
+        console.error('Error uploading screenshot:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to upload screenshot',
+            error: error.message
+        });
+    }
+});
+
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({

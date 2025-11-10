@@ -5,7 +5,7 @@ import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import '../styles/FlowerField.css';
 
-const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType', onGroupingChange, highlightedProjectId = null }) => {
+const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'all', onGroupingChange, highlightedProjectId = null }) => {
     const containerRef = useRef(null);
     const svgRef = useRef(null);
     const simulationRef = useRef(null);
@@ -13,12 +13,237 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
     const isDraggingRef = useRef(false);
     const flowersDataRef = useRef([]);
     const isInitialMount = useRef(true);
+    
+    // Helper function to render cluster labels
+    const renderClusterLabelsForMode = (svg, flowers, mode) => {
+        if (mode !== 'projectType' && mode !== 'projectEmotions') {
+            svg.selectAll('.cluster-label-group').remove();
+            return;
+        }
+        
+        // Responsive sizing based on viewport
+        const viewportWidth = window.innerWidth;
+        let containerHeight, circleSize, fontSize, padding, gap;
+        
+        if (viewportWidth < 768) {
+            // Mobile
+            containerHeight = 34;
+            circleSize = 24;
+            fontSize = 12;
+            padding = { top: 5, right: 8, bottom: 5, left: 5 };
+            gap = 5;
+        } else if (viewportWidth < 1024) {
+            // Tablet
+            containerHeight = 38;
+            circleSize = 26;
+            fontSize = 14;
+            padding = { top: 6, right: 10, bottom: 6, left: 6 };
+            gap = 6;
+        } else {
+            // Desktop
+            containerHeight = 44;
+            circleSize = 28;
+            fontSize = 16;
+            padding = { top: 8, right: 12, bottom: 8, left: 8 };
+            gap = 8;
+        }
+        
+        // Group flowers by project type or emotion
+        const clusters = {};
+        const groupByField = mode === 'projectType' ? 'projectAdjective' : 'projectFeeling';
+        
+        flowers.forEach(flower => {
+            if (!flower.isProject) return;
+            
+            const groupValue = flower[groupByField];
+            if (!groupValue) return;
+            
+            if (!clusters[groupValue]) {
+                clusters[groupValue] = {
+                    flowers: [],
+                    minY: Infinity,
+                    sumX: 0,
+                    sumY: 0
+                };
+            }
+            clusters[groupValue].flowers.push(flower);
+            clusters[groupValue].minY = Math.min(clusters[groupValue].minY, flower.y || 0);
+            clusters[groupValue].sumX += flower.x || 0;
+            clusters[groupValue].sumY += flower.y || 0;
+        });
+        
+        // Calculate cluster centers
+        const clusterData = Object.entries(clusters).map(([groupValue, data]) => {
+            const avgX = data.sumX / data.flowers.length;
+            const avgY = data.minY - 120;
+            
+            return {
+                type: groupValue, // Label text - shows type or emotion
+                x: avgX,
+                y: Math.max(80, avgY),
+                count: data.flowers.length
+            };
+        });
+        
+        // Render labels with new design
+        svg.selectAll('.cluster-label-group')
+            .data(clusterData, d => d.type)
+            .join(
+                enter => {
+                    const group = enter.append('g')
+                        .attr('class', 'cluster-label-group')
+                        .attr('transform', d => `translate(${d.x}, ${d.y})`)
+                        .style('opacity', 0);
+                    
+                    // Measure text first to calculate container width
+                    const tempText = group.append('text')
+                        .style('font-size', `${fontSize}px`)
+                        .style('font-weight', '700')
+                        .style('font-family', 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif')
+                        .text(d => d.type);
+                    
+                    group.each(function(d) {
+                        const g = d3.select(this);
+                        const textNode = g.select('text').node();
+                        const textWidth = textNode.getBBox().width;
+                        
+                        // Calculate container width: padding + circle + gap + text + padding
+                        const containerWidth = padding.left + circleSize + gap + textWidth + padding.right;
+                        
+                        // Remove temp text
+                        g.select('text').remove();
+                        
+                        // Add outer container background (light blue rounded pill)
+                        g.append('rect')
+                            .attr('class', 'cluster-label-container')
+                            .attr('x', -containerWidth / 2)
+                            .attr('y', -containerHeight / 2)
+                            .attr('width', containerWidth)
+                            .attr('height', containerHeight)
+                            .attr('rx', containerHeight / 2) // Fully rounded (100px border-radius effect)
+                            .style('fill', '#B7E7FC')
+                            .style('stroke', 'none');
+                        
+                        // Calculate positions for inner elements
+                        const startX = -containerWidth / 2 + padding.left;
+                        const centerY = 0;
+                        
+                        // Add count circle
+                        g.append('circle')
+                            .attr('class', 'cluster-label-count-circle')
+                            .attr('cx', startX + circleSize / 2)
+                            .attr('cy', centerY)
+                            .attr('r', circleSize / 2)
+                            .style('fill', '#B7E7FC')
+                            .style('stroke', '#000000')
+                            .style('stroke-width', '1px');
+                        
+                        // Add count number
+                        g.append('text')
+                            .attr('class', 'cluster-count-number')
+                            .attr('x', startX + circleSize / 2)
+                            .attr('y', centerY)
+                            .attr('text-anchor', 'middle')
+                            .attr('dominant-baseline', 'central')
+                            .style('font-family', 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif')
+                            .style('font-size', `${fontSize}px`)
+                            .style('font-weight', '400')
+                            .style('fill', '#000000')
+                            .text(d.count);
+                        
+                        // Add type label text
+                        g.append('text')
+                            .attr('class', 'cluster-type-text')
+                            .attr('x', startX + circleSize + gap)
+                            .attr('y', centerY)
+                            .attr('text-anchor', 'start')
+                            .attr('dominant-baseline', 'central')
+                            .style('font-family', 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif')
+                            .style('font-size', `${fontSize}px`)
+                            .style('font-weight', '700')
+                            .style('fill', '#000000')
+                            .text(d.type);
+                    });
+                    
+                    // Fade in
+                    group.transition()
+                        .duration(500)
+                        .style('opacity', 1);
+                    
+                    return group;
+                },
+                update => {
+                    update.transition()
+                        .duration(500)
+                        .attr('transform', d => `translate(${d.x}, ${d.y})`);
+                    
+                    // Update count and text
+                    update.select('.cluster-count-number')
+                        .text(d => d.count);
+                    
+                    update.select('.cluster-type-text')
+                        .text(d => d.type);
+                    
+                    return update;
+                },
+                exit => {
+                    exit.transition()
+                        .duration(300)
+                        .style('opacity', 0)
+                        .remove();
+                }
+            );
+    };
 
     // Function to calculate cluster centers based on grouping mode
     const calculateClusterCenters = (flowers, mode, width) => {
         const extendedWidth = width * 1.5;
         
-        if (mode === 'projectType') {
+        // "All" mode - create clustered pile arrangement
+        if (mode === 'all') {
+            const totalFlowers = flowers.length;
+            
+            // Responsive clustering parameters based on viewport width
+            const viewportWidth = window.innerWidth;
+            let clusteringParams;
+            if (viewportWidth < 768) {
+                // Mobile: tighter clustering
+                clusteringParams = {
+                    horizontalSpread: 80,
+                    verticalSpread: 140,
+                    widthPerFlower: 50
+                };
+            } else if (viewportWidth < 1024) {
+                // Tablet: medium clustering
+                clusteringParams = {
+                    horizontalSpread: 120,
+                    verticalSpread: 160,
+                    widthPerFlower: 60
+                };
+            } else {
+                // Desktop: looser clustering
+                clusteringParams = {
+                    horizontalSpread: 150,
+                    verticalSpread: 180,
+                    widthPerFlower: 70
+                };
+            }
+            
+            // Dynamic width based on number of flowers
+            const calculatedWidth = totalFlowers * clusteringParams.widthPerFlower;
+            const wideWidth = Math.max(1200, calculatedWidth);
+            
+            return flowers.map((flower, i) => ({
+                key: `flower-${i}`,
+                x: (i / (totalFlowers || 1)) * wideWidth,
+                // Add random horizontal offset for clustering
+                horizontalJitter: (Math.random() - 0.5) * clusteringParams.horizontalSpread,
+                // Add random vertical offset for pile effect
+                verticalJitter: (Math.random() - 0.5) * clusteringParams.verticalSpread,
+                layer: Math.floor(Math.random() * 4), // 4 depth layers
+                weight: 0.2 // Weaker force for natural spread
+            }));
+        } else if (mode === 'projectType') {
             // Group by adjective (shape) - same shape clusters together
             const uniqueTypes = [...new Set(flowers.filter(f => f.isProject).map(f => f.projectAdjective))].filter(Boolean);
             if (uniqueTypes.length === 0) return [{ x: extendedWidth * 0.5, weight: 1.0 }];
@@ -65,7 +290,18 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
         return flowers.map((flower, i) => {
             let clusterIndex = 0;
             
-            if (flower.isProject && clusterCenters.length > 0) {
+            // "All" mode - each flower gets its own position with clustering data
+            if (mode === 'all') {
+                clusterIndex = i;
+                const clusterData = clusterCenters[i];
+                return {
+                    ...flower,
+                    cluster: clusterIndex,
+                    clusterX: clusterData.x + clusterData.horizontalJitter,
+                    verticalOffset: clusterData.verticalJitter,
+                    layer: clusterData.layer
+                };
+            } else if (flower.isProject && clusterCenters.length > 0) {
                 if (mode === 'projectType') {
                     const typeIndex = clusterCenters.findIndex(c => c.key === flower.projectAdjective);
                     clusterIndex = typeIndex >= 0 ? typeIndex : Math.floor(Math.random() * clusterCenters.length);
@@ -109,36 +345,155 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
 
         updateDimensions();
         
+        // Calculate dynamic width for "All" mode
+        let containerWidth = dimensionsRef.current.width;
+        if (groupingMode === 'all') {
+            const totalFlowers = projects.length + 8; // Projects + decorative flowers
+            const viewportWidth = window.innerWidth;
+            const widthPerFlower = viewportWidth < 768 ? 50 : viewportWidth < 1024 ? 60 : 70;
+            const calculatedWidth = totalFlowers * widthPerFlower;
+            containerWidth = Math.max(viewportWidth * 1.5, calculatedWidth);
+            
+            // Update SVG width for "All" mode
+            d3.select(svgRef.current)
+                .attr('width', containerWidth);
+        }
+        
+        // Map project adjectives to consistent shapes
+        const getShapeForAdjective = (adjective) => {
+            const adjectiveToShapeMap = {
+                'Revolutionary': '1',
+                'Innovative': '2',
+                'Disruptive': '3',
+                'Fresh': '4',
+                'Bold': '5',
+                'Crispy': '6',
+                'Juicy': '7',
+                'Ripe': '8',
+                'Organic': '9',
+                'Sustainable': '10',
+                'Electric': '11',
+                'Magnetic': '12',
+                'Quantum': '13',
+                'Neural': '14',
+                'Atomic': '15'
+            };
+            
+            return adjectiveToShapeMap[adjective] || null;
+        };
+        
+        // Reverse map: shape to adjective (for fixing old data)
+        const getAdjectiveForShape = (shapeNum) => {
+            const shapeToAdjectiveMap = {
+                '1': 'Revolutionary',
+                '2': 'Innovative',
+                '3': 'Disruptive',
+                '4': 'Fresh',
+                '5': 'Bold',
+                '6': 'Crispy',
+                '7': 'Juicy',
+                '8': 'Ripe',
+                '9': 'Organic',
+                '10': 'Sustainable',
+                '11': 'Electric',
+                '12': 'Magnetic',
+                '13': 'Quantum',
+                '14': 'Neural',
+                '15': 'Atomic'
+            };
+            return shapeToAdjectiveMap[String(shapeNum)] || null;
+        };
+        
         // Combine project flowers (large, clickable) with decorative flowers (small, background)
-        const projectFlowers = projects.map((project, i) => ({
-            id: `project-${project.id || i}`,
-            shape: project.stickerData?.fruitType?.replace('shape', '') || (i % 15) + 1,
-            size: 'large',
-            radius: 75, // Larger for visibility and clickability
-            rotation: (i * 17 - 10) % 360,
-            opacity: 0.98,
-            responsive: false,
-            isProject: true,
-            project: project,
-            projectAdjective: project.projectAdjective || null,
-            projectFeeling: project.projectFeeling || null
-        }));
+        const projectFlowers = projects.map((project, i) => {
+            let projectAdjective = project.projectAdjective;
+            let shapeNumber;
+            
+            // CRITICAL: Always derive shape from adjective, NEVER from stored data
+            // This ensures all projects with same adjective have same shape
+            
+            if (projectAdjective) {
+                // Use adjective-to-shape mapping
+                shapeNumber = getShapeForAdjective(projectAdjective);
+                
+                if (shapeNumber) {
+                    console.log(`✅ Project "${project.projectName}": ${projectAdjective} → shape${shapeNumber}`);
+                } else {
+                    console.warn(`⚠️ Unknown adjective "${projectAdjective}" for project "${project.projectName}", using shape1`);
+                    shapeNumber = '1';
+                }
+            } else if (project.stickerData?.fruitType) {
+                // Old project without adjective - infer from stored shape
+                const storedShape = project.stickerData.fruitType.replace('shape', '');
+                projectAdjective = getAdjectiveForShape(storedShape) || 'Revolutionary';
+                shapeNumber = getShapeForAdjective(projectAdjective) || storedShape;
+                
+                console.log(`🔄 Project "${project.projectName}" missing adjective, inferred "${projectAdjective}" (shape${shapeNumber})`);
+            } else {
+                // No data at all - default
+                projectAdjective = 'Revolutionary';
+                shapeNumber = '1';
+                console.warn(`⚠️ Project "${project.projectName}" has no data, defaulting to Revolutionary/shape1`);
+            }
+            
+            return {
+                id: `project-${project.id || i}`,
+                shape: shapeNumber,
+                size: 'large',
+                radius: 100,
+                rotation: (i * 17 - 10) % 360,
+                opacity: 0.98,
+                responsive: false,
+                isProject: true,
+                project: project,
+                projectAdjective: projectAdjective,
+                projectFeeling: project.projectFeeling || null
+            };
+        });
         
         // Decorative background flowers
         const decorativeFlowers = [
-            { id: 'dec-1', shape: 15, size: 'small', radius: 50, rotation: 8, opacity: 0.85, responsive: 'hide-mobile', isProject: false },
-            { id: 'dec-2', shape: 1, size: 'small', radius: 50, rotation: -12, opacity: 0.85, responsive: 'hide-mobile', isProject: false },
-            { id: 'dec-3', shape: 3, size: 'small', radius: 50, rotation: 16, opacity: 0.8, responsive: 'hide-tablet', isProject: false },
-            { id: 'dec-4', shape: 5, size: 'small', radius: 50, rotation: -9, opacity: 0.8, responsive: 'hide-tablet', isProject: false },
-            { id: 'dec-5', shape: 7, size: 'small', radius: 50, rotation: 14, opacity: 0.85, responsive: 'hide-mobile', isProject: false },
-            { id: 'dec-6', shape: 9, size: 'small', radius: 50, rotation: -11, opacity: 0.8, responsive: 'hide-tablet', isProject: false },
-            { id: 'dec-7', shape: 11, size: 'small', radius: 50, rotation: 18, opacity: 0.82, responsive: 'hide-mobile', isProject: false },
-            { id: 'dec-8', shape: 13, size: 'small', radius: 50, rotation: -15, opacity: 0.78, responsive: 'hide-tablet', isProject: false },
+            { id: 'dec-1', shape: 15, size: 'small', radius: 75, rotation: 8, opacity: 0.85, responsive: 'hide-mobile', isProject: false },
+            { id: 'dec-2', shape: 1, size: 'small', radius: 75, rotation: -12, opacity: 0.85, responsive: 'hide-mobile', isProject: false },
+            { id: 'dec-3', shape: 3, size: 'small', radius: 75, rotation: 16, opacity: 0.8, responsive: 'hide-tablet', isProject: false },
+            { id: 'dec-4', shape: 5, size: 'small', radius: 75, rotation: -9, opacity: 0.8, responsive: 'hide-tablet', isProject: false },
+            { id: 'dec-5', shape: 7, size: 'small', radius: 75, rotation: 14, opacity: 0.85, responsive: 'hide-mobile', isProject: false },
+            { id: 'dec-6', shape: 9, size: 'small', radius: 75, rotation: -11, opacity: 0.8, responsive: 'hide-tablet', isProject: false },
+            { id: 'dec-7', shape: 11, size: 'small', radius: 75, rotation: 18, opacity: 0.82, responsive: 'hide-mobile', isProject: false },
+            { id: 'dec-8', shape: 13, size: 'small', radius: 75, rotation: -15, opacity: 0.78, responsive: 'hide-tablet', isProject: false },
         ];
         
         const initialFlowers = [...projectFlowers, ...decorativeFlowers];
+        
+        // Validation: Check that all projects with same adjective have same shape
+        if (process.env.NODE_ENV === 'development') {
+            const adjectiveShapeMap = {};
+            projectFlowers.forEach(flower => {
+                const adj = flower.projectAdjective;
+                if (adj) {
+                    if (!adjectiveShapeMap[adj]) {
+                        adjectiveShapeMap[adj] = flower.shape;
+                    } else if (adjectiveShapeMap[adj] !== flower.shape) {
+                        console.error(`🐛 SHAPE INCONSISTENCY DETECTED!`);
+                        console.error(`Adjective "${adj}" has multiple shapes:`);
+                        console.error(`  Expected: shape${adjectiveShapeMap[adj]}`);
+                        console.error(`  Found: shape${flower.shape}`);
+                        console.error(`  Project:`, flower.project.projectName);
+                    }
+                }
+            });
+            
+            // Log shape distribution for debugging
+            console.log('🌸 Shape Distribution by Adjective:');
+            Object.entries(adjectiveShapeMap).forEach(([adj, shape]) => {
+                const count = projectFlowers.filter(f => f.projectAdjective === adj).length;
+                console.log(`  ${adj}: shape${shape} (${count} projects)`);
+            });
+        }
 
-        const { width, height } = dimensionsRef.current;
+        // Use calculated container width for "All" mode
+        const width = containerWidth;
+        const height = dimensionsRef.current.height;
 
         // Calculate cluster centers based on current grouping mode
         const clusterCenters = calculateClusterCenters(initialFlowers, groupingMode, width);
@@ -150,17 +505,36 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
         flowersDataRef.current = flowersWithClusters;
 
         // Create D3 force simulation with bounds to prevent vertical cutoff
+        // Different configuration for "All" mode vs grouped modes
+        const isAllMode = groupingMode === 'all';
+        
         const simulation = d3.forceSimulation(flowersWithClusters)
-            .force('x', d3.forceX(d => d.clusterX).strength(0.3))
-            // Keep within vertical bounds: min 80px from top, max 80px from bottom
-            .force('y', d3.forceY(height - 100).strength(0.6))
-            .force('collide', d3.forceCollide(d => d.radius).strength(0.7))
-            .force('charge', d3.forceManyBody().strength(5).distanceMax(200))
+            .force('x', d3.forceX(d => d.clusterX).strength(isAllMode ? 0.15 : 0.3))
+            // For "All" mode: create pile effect with vertical clustering
+            .force('y', d3.forceY(d => {
+                if (isAllMode) {
+                    const baseY = height - 120;
+                    return baseY + (d.verticalOffset || 0);
+                }
+                return height - 100;
+            }).strength(isAllMode ? 0.25 : 0.6))
+            // Reduce collision radius in "All" mode to allow overlap for pile effect
+            .force('collide', d3.forceCollide(d => {
+                const baseRadius = d.radius;
+                return isAllMode ? baseRadius * 0.7 : baseRadius; // 70% radius allows moderate overlap
+            }).strength(0.7))
+            // Light repulsion in "All" mode for natural spacing
+            .force('charge', d3.forceManyBody().strength(isAllMode ? -15 : 5).distanceMax(200))
             // Add bounds force to keep flowers visible vertically
             .force('bounds', () => {
                 flowersWithClusters.forEach(d => {
                     const buffer = d.radius;
-                    d.y = Math.max(buffer + 60, Math.min(height - buffer - 20, d.y));
+                    if (isAllMode) {
+                        // Allow more vertical range for pile effect
+                        d.y = Math.max(buffer + 40, Math.min(height - buffer - 10, d.y));
+                    } else {
+                        d.y = Math.max(buffer + 60, Math.min(height - buffer - 20, d.y));
+                    }
                 });
             })
             .stop();
@@ -183,10 +557,10 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
         // Get size dimensions for each flower type
         const getSizeClass = (size) => {
             switch(size) {
-                case 'large': return { width: 140, height: 140 };
-                case 'medium': return { width: 110, height: 110 };
-                case 'small': return { width: 90, height: 90 };
-                default: return { width: 110, height: 110 };
+                case 'large': return { width: 200, height: 200 };
+                case 'medium': return { width: 180, height: 180 };
+                case 'small': return { width: 150, height: 150 };
+                default: return { width: 180, height: 180 };
             }
         };
 
@@ -196,7 +570,16 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
             .join('g')
             .attr('class', d => `flower-group flower-${d.size} ${d.responsive || ''} ${d.isProject ? 'project-flower' : 'decorative-flower'}`)
             .attr('transform', d => `translate(${d.x}, ${d.y})`)
-            .style('cursor', 'grab');
+            .style('cursor', 'grab')
+            .style('z-index', d => {
+                // For "All" mode: set z-index based on y position and layer for depth effect
+                if (groupingMode === 'all') {
+                    const baseZ = Math.floor(d.y || 0);
+                    const layerBonus = (d.layer || 0) * 10;
+                    return baseZ + layerBonus;
+                }
+                return 10;
+            });
 
         // Add flower images
         flowerGroups.each(function(d) {
@@ -220,22 +603,53 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
                     .style('opacity', 0)
                     .style('pointer-events', 'none');
                 
-                labelGroup.append('rect')
-                    .attr('x', -60)
-                    .attr('y', h / 2 + 10)
-                    .attr('width', 120)
-                    .attr('height', 35)
-                    .attr('rx', 17.5)
-                    .style('fill', 'rgba(255, 255, 255, 0.95)')
-                    .style('filter', 'drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15))');
+                // Responsive font size and max width based on viewport
+                const viewportWidth = window.innerWidth;
+                let fontSize, maxWidth, padding;
                 
-                labelGroup.append('text')
+                if (viewportWidth < 480) {
+                    // Mobile
+                    fontSize = '11px';
+                    maxWidth = 250;
+                    padding = 20; // 10px each side
+                } else if (viewportWidth < 768) {
+                    // Small tablet
+                    fontSize = '12px';
+                    maxWidth = 300;
+                    padding = 24; // 12px each side
+                } else {
+                    // Desktop
+                    fontSize = '14px';
+                    maxWidth = 400;
+                    padding = 32; // 16px each side
+                }
+                
+                // Add text first to measure its width
+                const text = labelGroup.append('text')
                     .attr('y', h / 2 + 32)
                     .attr('text-anchor', 'middle')
-                    .style('font-size', '14px')
+                    .style('font-size', fontSize)
                     .style('font-weight', '600')
                     .style('fill', '#333')
                     .text(d.project.projectName || 'Project');
+                
+                // Measure text width and calculate dynamic label dimensions
+                const textBBox = text.node().getBBox();
+                const minWidth = 80;
+                const labelWidth = Math.min(maxWidth, Math.max(minWidth, textBBox.width + padding));
+                const labelHeight = 35;
+                
+                // Insert background rect before text (so text appears on top)
+                labelGroup.insert('rect', 'text')
+                    .attr('x', -labelWidth / 2)
+                    .attr('y', h / 2 + 10)
+                    .attr('width', labelWidth)
+                    .attr('height', labelHeight)
+                    .attr('rx', 8)
+                    .style('fill', 'rgba(255, 255, 255, 0.85)')
+                    .style('stroke', '#ffffff')
+                    .style('stroke-width', '2px')
+                    .style('filter', 'drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15))');
             }
         });
 
@@ -322,11 +736,15 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
         flowerGroups.filter(d => d.isProject)
             .on('mouseenter', function() {
                 if (!isDraggingRef.current) {
+                    // Bring to front on hover
                     d3.select(this)
+                        .raise()
+                        .style('z-index', 1000)
+                        .style('filter', 'drop-shadow(0 4px 12px rgba(0,0,0,0.3))')
                         .transition()
                         .duration(200)
                         .attr('transform', function(d) {
-                            return `translate(${d.x}, ${d.y}) scale(1.1)`;
+                            return `translate(${d.x}, ${d.y}) scale(1.15)`;
                         });
                     
                     d3.select(this).select('.flower-label-group')
@@ -335,8 +753,15 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
                         .style('opacity', 1);
                 }
             })
-            .on('mouseleave', function() {
+            .on('mouseleave', function(event, d) {
+                // Reset z-index based on mode
+                const zIndex = groupingMode === 'all' 
+                    ? Math.floor(d.y || 0) + ((d.layer || 0) * 10)
+                    : 10;
+                
                 d3.select(this)
+                    .style('z-index', zIndex)
+                    .style('filter', 'drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15))')
                     .transition()
                     .duration(200)
                     .attr('transform', function(d) {
@@ -349,10 +774,18 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
                     .style('opacity', 0);
             });
 
+        // Function to calculate and render cluster labels
+        const renderClusterLabels = () => {
+            renderClusterLabelsForMode(svg, flowersWithClusters, groupingMode);
+        };
+        
         // Update positions on simulation tick
         simulation.on('tick', () => {
             flowerGroups.attr('transform', d => `translate(${d.x}, ${d.y})`);
         });
+        
+        // Render cluster labels after initial simulation
+        setTimeout(() => renderClusterLabels(), 500);
 
         // Restart simulation for interactive updates
         simulation.restart();
@@ -360,9 +793,21 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
         // Handle window resize
         const handleResize = () => {
             updateDimensions();
-            const { width: newWidth, height: newHeight } = dimensionsRef.current;
+            let { width: newWidth, height: newHeight } = dimensionsRef.current;
             
             if (flowersDataRef.current.length === 0) return;
+            
+            // Recalculate width for "All" mode
+            if (groupingMode === 'all') {
+                const totalFlowers = flowersDataRef.current.length;
+                const viewportWidth = window.innerWidth;
+                const widthPerFlower = viewportWidth < 768 ? 50 : viewportWidth < 1024 ? 60 : 70;
+                const calculatedWidth = totalFlowers * widthPerFlower;
+                newWidth = Math.max(viewportWidth * 1.5, calculatedWidth);
+                
+                // Update SVG width
+                d3.select(svgRef.current).attr('width', newWidth);
+            }
             
             // Recalculate cluster centers for new width
             const newClusterCenters = calculateClusterCenters(flowersDataRef.current, groupingMode, newWidth);
@@ -374,7 +819,7 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
             // Update simulation forces
             simulation.nodes(updatedFlowers);
             simulation
-                .force('x', d3.forceX(d => d.clusterX).strength(0.3))
+                .force('x', d3.forceX(d => d.clusterX).strength(groupingMode === 'all' ? 0.15 : 0.3))
                 .force('y', d3.forceY(newHeight - 80).strength(0.5))
                 .alpha(0.3)
                 .restart();
@@ -400,8 +845,24 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
         
         if (!simulationRef.current || !svgRef.current || flowersDataRef.current.length === 0) return;
         
-        const { width, height } = dimensionsRef.current;
+        let { width, height } = dimensionsRef.current;
         const flowers = flowersDataRef.current;
+        
+        // Recalculate width for "All" mode
+        if (groupingMode === 'all') {
+            const totalFlowers = flowers.length;
+            const viewportWidth = window.innerWidth;
+            const widthPerFlower = viewportWidth < 768 ? 50 : viewportWidth < 1024 ? 60 : 70;
+            const calculatedWidth = totalFlowers * widthPerFlower;
+            width = Math.max(viewportWidth * 1.5, calculatedWidth);
+            
+            // Update SVG width
+            d3.select(svgRef.current).attr('width', width);
+        } else {
+            // Reset to default width for other modes
+            width = dimensionsRef.current.width;
+            d3.select(svgRef.current).attr('width', width);
+        }
         
         // Calculate new cluster centers based on grouping mode
         const newClusterCenters = calculateClusterCenters(flowers, groupingMode, width);
@@ -446,9 +907,18 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
                     flower.originalY = flower.y;
                 }
             });
+            
+            // Update cluster labels after transition
+            const svg = d3.select(svgRef.current);
+            if (groupingMode !== 'projectType' && groupingMode !== 'projectEmotions') {
+                svg.selectAll('.cluster-label-group').remove();
+            } else {
+                // Re-render labels for new grouping (both projectType and projectEmotions)
+                renderClusterLabelsForMode(svg, updatedFlowers, groupingMode);
+            }
         }, 1500);
         
-    }, [groupingMode]);
+    }, [groupingMode, renderClusterLabelsForMode]);
 
     // Handle highlighting of specific flower when navigating from Shelf
     useEffect(() => {
@@ -459,10 +929,10 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
         // Helper function to get size dimensions
         const getSizeClass = (size) => {
             switch(size) {
-                case 'large': return { width: 140, height: 140 };
-                case 'medium': return { width: 110, height: 110 };
-                case 'small': return { width: 90, height: 90 };
-                default: return { width: 110, height: 110 };
+                case 'large': return { width: 200, height: 200 };
+                case 'medium': return { width: 180, height: 180 };
+                case 'small': return { width: 150, height: 150 };
+                default: return { width: 180, height: 180 };
             }
         };
         
@@ -514,34 +984,39 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
                 .attr('r', radius)
                 .attr('fill', 'none')
                 .attr('stroke', '#FFD700')
-                .attr('stroke-width', 4)
+                .attr('stroke-width', 2)
                 .attr('opacity', 0)
                 .transition()
                 .duration(600)
                 .attr('opacity', 1)
-                .attr('stroke-width', 6)
+                .attr('stroke-width', 4)
                 .transition()
                 .duration(600)
                 .attr('opacity', 0)
-                .attr('stroke-width', 4)
+                .attr('stroke-width', 2)
                 .on('end', function repeat() {
                     d3.select(this)
                         .transition()
                         .duration(600)
                         .attr('opacity', 1)
-                        .attr('stroke-width', 6)
+                        .attr('stroke-width', 4)
                         .transition()
                         .duration(600)
                         .attr('opacity', 0)
-                        .attr('stroke-width', 4)
+                        .attr('stroke-width', 2)
                         .on('end', repeat);
                 });
         }
         
         // Clean up when highlight is removed
         return () => {
+            // Stop any running transitions on highlight rings to prevent position shifts
+            svg.selectAll('.highlight-ring')
+                .interrupt() // Stop any active transitions
+                .remove();
+            
+            // Remove highlight class without affecting position
             svg.selectAll('.flower-group').classed('highlighted', false);
-            svg.selectAll('.highlight-ring').remove();
         };
     }, [highlightedProjectId]);
 
@@ -550,6 +1025,21 @@ const FlowerField = ({ projects = [], onFlowerClick, groupingMode = 'projectType
             {/* Grouping Toggle UI - Neobrutalism Radio Style */}
             <div className="flower-grouping-toggle">
                 <div className="toggle-wrapper">
+                    <div className="toggle-option">
+                        <input 
+                            checked={groupingMode === 'all'}
+                            value="all" 
+                            name="flower-sort" 
+                            type="radio" 
+                            className="toggle-input"
+                            onChange={() => onGroupingChange && onGroupingChange('all')}
+                            title="Show all flowers ungrouped"
+                        />
+                        <div className="toggle-btn">
+                            <span className="toggle-span">🌸 All</span>
+                        </div>
+                    </div>
+                    
                     <div className="toggle-option">
                         <input 
                             checked={groupingMode === 'projectType'}

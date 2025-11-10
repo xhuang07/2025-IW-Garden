@@ -42,11 +42,11 @@
     --secondary-color: #D28664;
     position: relative;
     width: fit-content;
-    min-width: 28.125rem; /* 450px → 28.125rem */
-    height: 4rem; /* 36px → 2.25rem */
+    min-width: 34.375rem; /* 550px for 4 options */
+    height: 4rem;
     background-color: var(--bg-color);
     border: 2px solid var(--main-color);
-    border-radius: 2.125rem; /* 34px → 2.125rem */
+    border-radius: 2.125rem;
     display: flex;
     flex-direction: row;
     box-shadow: 4px 4px var(--main-color);
@@ -142,32 +142,50 @@
 
 /* Individual flower styling (SVG groups) */
 .flower-group {
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.2s ease;
     will-change: transform;
+    cursor: pointer;
+    pointer-events: all;
+}
+
+.flower-group.project-flower {
+    position: relative;
+    z-index: 10;
+}
+
+.flower-group.project-flower:hover {
+    z-index: 100;
 }
 
 /* Individual flower styling (legacy div support) */
 .flower {
     position: absolute;
-    pointer-events: none;
+    pointer-events: all;
     transition: transform 0.3s ease, opacity 0.3s ease;
     will-change: transform;
+    cursor: pointer;
+}
+
+.flower:hover {
+    z-index: 1000 !important;
+    transform: scale(1.15);
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
 }
 
 /* Flower size variants - more similar sizes for natural grouping */
 .flower-large {
-    width: 120px;
-    height: 120px;
+    width: 200px;
+    height: 200px;
 }
 
 .flower-medium {
-    width: 110px;
-    height: 110px;
+    width: 180px;
+    height: 180px;
 }
 
 .flower-small {
-    width: 90px;
-    height: 90px;
+    width: 150px;
+    height: 150px;
 }
 
 .flower-image {
@@ -230,11 +248,12 @@
     }
     
     .toggle-wrapper {
-        min-width: 25rem; /* 400px → 25rem */
+        min-width: 30rem; /* 480px for 4 options on tablet */
+        width: 95%;
     }
     
     .toggle-span {
-        font-size: 0.75rem; /* 12px → 0.75rem */
+        font-size: 0.6875rem; /* 11px for tighter spacing */
     }
     
     /* Hide some flowers on tablet for less density */
@@ -245,19 +264,26 @@
     
     /* Adjust sizes for tablet - keep similar */
     .flower-large {
-        width: 100px;
-        height: 100px;
+        width: 167px;
+        height: 167px;
     }
     
     .flower-medium {
-        width: 90px;
-        height: 90px;
+        width: 150px;
+        height: 150px;
     }
     
     .flower-small {
-        width: 75px;
-        height: 75px;
+        width: 125px;
+        height: 125px;
     }
+    
+    /* Responsive flower labels for tablet */
+    .flower-label-group text {
+        font-size: 12px;
+    }
+    
+    /* Responsive cluster labels for tablet - handled in JS */
 }
 
 /* Responsive behavior - Mobile (480px and below) */
@@ -272,13 +298,13 @@
     }
     
     .toggle-wrapper {
-        min-width: 20rem; /* 320px → 20rem */
-        width: 90%;
-        height: 2.125rem; /* 34px → 2.125rem */
+        min-width: 21.25rem; /* 340px for 4 options on mobile */
+        width: 95%;
+        height: 2.125rem;
     }
     
     .toggle-span {
-        font-size: 0.6875rem; /* 11px → 0.6875rem */
+        font-size: 0.625rem; /* 10px for very tight spacing */
     }
     
     .toggle-option {
@@ -295,19 +321,26 @@
     
     /* Smaller sizes for mobile - keep similar */
     .flower-large {
-        width: 80px;
-        height: 80px;
+        width: 133px;
+        height: 133px;
     }
     
     .flower-medium {
-        width: 75px;
-        height: 75px;
+        width: 125px;
+        height: 125px;
     }
     
     .flower-small {
-        width: 60px;
-        height: 60px;
+        width: 100px;
+        height: 100px;
     }
+    
+    /* Responsive flower labels for mobile */
+    .flower-label-group text {
+        font-size: 11px;
+    }
+    
+    /* Responsive cluster labels for mobile - handled in JS */
 }
 
 /* Very small screens (360px and below) */
@@ -336,28 +369,71 @@
     }
     
     .flower-large {
-        width: 65px;
-        height: 65px;
+        width: 108px;
+        height: 108px;
     }
     
     .flower-medium {
-        width: 60px;
-        height: 60px;
+        width: 100px;
+        height: 100px;
     }
     
     .flower-small {
-        width: 55px;
-        height: 55px;
+        width: 92px;
+        height: 92px;
     }
+}
+
+/* Flower label styling */
+.flower-label-group {
+    pointer-events: none;
+}
+
+.flower-label-group text {
+    white-space: nowrap;
+    text-overflow: clip;
+}
+
+.flower-label-group rect {
+    pointer-events: none;
+}
+
+/* Cluster label styling for Project Type grouping - New Design */
+.cluster-label-group {
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* Container (white rounded pill background) */
+.cluster-label-container {
+    pointer-events: none;
+}
+
+/* Count circle with border */
+.cluster-label-count-circle {
+    pointer-events: none;
+}
+
+/* Count number inside circle */
+.cluster-count-number {
+    pointer-events: none;
+    text-transform: none;
+}
+
+/* Type label text (bold) */
+.cluster-type-text {
+    pointer-events: none;
+    text-transform: capitalize;
 }
 
 /* Highlighted flower styles */
 .flower-group.highlighted {
-    filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.8));
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.8));
     z-index: 1000 !important;
 }
 
 .highlight-ring {
-    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+    filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.6));
 }
+
 
