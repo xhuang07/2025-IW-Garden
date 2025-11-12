@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Sticker from '../components/Sticker';
+import DynamicSticker from '../components/DynamicSticker';
 import '../styles/Shelf.css';
 
 function Shelf({ projects, onProjectLiked }) {
@@ -153,15 +154,25 @@ function Shelf({ projects, onProjectLiked }) {
                             onClick={() => handleProjectClick(project)}
                         >
                             <div className="shelf-item-sticker">
-                                <Sticker 
-                                    data={{
-                                        ...project.stickerData,
-                                        projectName: project.projectName,
-                                        location: project.location,
-                                        creator: project.creator,
-                                        date: new Date(project.createdAt).toLocaleDateString()
-                                    }} 
-                                />
+                                {project.projectAdjective && project.projectFeeling ? (
+                                    <DynamicSticker 
+                                        projectAdjective={project.projectAdjective}
+                                        projectFeeling={project.projectFeeling}
+                                        location={project.location}
+                                        size="medium"
+                                        animated={true}
+                                    />
+                                ) : (
+                                    <Sticker 
+                                        data={{
+                                            ...project.stickerData,
+                                            projectName: project.projectName,
+                                            location: project.location,
+                                            creator: project.creator,
+                                            date: new Date(project.createdAt).toLocaleDateString()
+                                        }} 
+                                    />
+                                )}
                             </div>
                             
                             <div className="shelf-item-info">
@@ -229,15 +240,25 @@ function Shelf({ projects, onProjectLiked }) {
                             
                             <div className="modal-content-grid">
                                 <div className="modal-sticker">
-                                    <Sticker 
-                                        data={{
-                                            ...selectedProject.stickerData,
-                                            projectName: selectedProject.projectName,
-                                            location: selectedProject.location,
-                                            creator: selectedProject.creator,
-                                            date: new Date(selectedProject.createdAt).toLocaleDateString()
-                                        }} 
-                                    />
+                                    {selectedProject.projectAdjective && selectedProject.projectFeeling ? (
+                                        <DynamicSticker 
+                                            projectAdjective={selectedProject.projectAdjective}
+                                            projectFeeling={selectedProject.projectFeeling}
+                                            location={selectedProject.location}
+                                            size="large"
+                                            animated={true}
+                                        />
+                                    ) : (
+                                        <Sticker 
+                                            data={{
+                                                ...selectedProject.stickerData,
+                                                projectName: selectedProject.projectName,
+                                                location: selectedProject.location,
+                                                creator: selectedProject.creator,
+                                                date: new Date(selectedProject.createdAt).toLocaleDateString()
+                                            }} 
+                                        />
+                                    )}
                                 </div>
                                 
                                 <div className="modal-details">

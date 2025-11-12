@@ -6,6 +6,11 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Sticker from '../components/Sticker';
 import { generateFruitType } from '../utils/fruitGenerator';
+import { 
+    generateStickerFromFiles, 
+    generateStickerSVG, 
+    getStickerMetadata 
+} from '../utils/stickerGenerator';
 import '../styles/StickerGenerator.css';
 
 function StickerGenerator({ onProjectAdded }) {
@@ -23,6 +28,7 @@ function StickerGenerator({ onProjectAdded }) {
     const [screenshot, setScreenshot] = useState(null);
     const [previewUrl, setPreviewUrl] = useState(null);
     const [generatedSticker, setGeneratedSticker] = useState(null);
+    const [stickerSVG, setStickerSVG] = useState(null);
     const [isGenerating, setIsGenerating] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [plantedProjectId, setPlantedProjectId] = useState(null);
@@ -125,24 +131,67 @@ function StickerGenerator({ onProjectAdded }) {
         }
     };
     
-    const generateSticker = () => {
-        // Generate fruit based on Mad Libs
-        const fruitData = generateFruitType(
-            formData.madLibAdjective,
-            formData.madLibFeeling,
-            formData.projectName
-        );
+    const generateSticker = async () => {
+        setIsGenerating(true);
         
-        const stickerData = {
-            ...fruitData,
-            projectName: formData.projectName,
-            location: formData.location,
-            creator: formData.creator || 'Anonymous Gardener',
-            text: `I'm growing ${formData.projectName} in ${formData.location}`,
-            date: new Date().toLocaleDateString()
-        };
+        console.log('🎨 Generating sticker with:', {
+            adjective: formData.madLibAdjective,
+            feeling: formData.madLibFeeling,
+            location: formData.location
+        });
         
-        setGeneratedSticker(stickerData);
+        try {
+            const adjective = formData.madLibAdjective || 'Fresh';
+            const feeling = formData.madLibFeeling || 'Excited';
+            
+            // Try to generate from SVG files first
+            let svg = await generateStickerFromFiles(
+                adjective,
+                feeling,
+                formData.location
+            );
+            
+            // Fallback to programmatic generation if files not available
+            if (!svg) {
+                console.log('⚠️ Falling back to programmatic generation');
+                svg = generateStickerSVG(
+                    adjective,
+                    feeling,
+                    formData.location
+                );
+            }
+            
+            setStickerSVG(svg);
+            
+            // Also generate old format for backward compatibility
+            const fruitData = generateFruitType(
+                formData.madLibAdjective,
+                formData.madLibFeeling,
+                formData.projectName
+            );
+            
+            // Get metadata for database
+            const metadata = getStickerMetadata(adjective, feeling);
+            
+            const stickerData = {
+                ...fruitData,
+                ...metadata,
+                projectName: formData.projectName,
+                location: formData.location,
+                creator: formData.creator || 'Anonymous Gardener',
+                text: `I'm growing ${formData.projectName} in ${formData.location}`,
+                date: new Date().toLocaleDateString()
+            };
+            
+            setGeneratedSticker(stickerData);
+            
+            console.log('✅ Sticker generated!', metadata);
+        } catch (error) {
+            console.error('❌ Error generating sticker:', error);
+            alert('Failed to generate sticker. Please try again.');
+        } finally {
+            setIsGenerating(false);
+        }
     };
     
     const handleSubmit = async (e) => {
@@ -222,6 +271,7 @@ function StickerGenerator({ onProjectAdded }) {
                     setScreenshot(null);
                     setPreviewUrl(null);
                     setGeneratedSticker(null);
+                    setStickerSVG(null);
                     setShowSuccess(false);
                     setPlantedProjectId(null);
                 }, 5000);
@@ -237,13 +287,30 @@ function StickerGenerator({ onProjectAdded }) {
         }
     };
     
-    const downloadSticker = () => {
-        if (!stickerRef.current) return;
-        
-        // Convert sticker to canvas and download
-        // This is simplified - in production you'd use html2canvas or similar
-        alert('Sticker download feature coming soon! For now, take a screenshot 📸');
-    };
+    // Download sticker function removed - no longer needed
+    // const downloadSticker = () => {
+    //     if (!stickerSVG) {
+    //         alert('Please generate a sticker first! 🎨');
+    //         return;
+    //     }
+    //     
+    //     // Convert SVG to blob and download
+    //     const blob = new Blob([stickerSVG], { type: 'image/svg+xml' });
+    //     const url = URL.createObjectURL(blob);
+    //     
+    //     // Create download link
+    //     const link = document.createElement('a');
+    //     link.href = url;
+    //     link.download = `${formData.projectName || 'project'}-sticker.svg`;
+    //     document.body.appendChild(link);
+    //     link.click();
+    //     document.body.removeChild(link);
+    //     
+    //     // Cleanup
+    //     URL.revokeObjectURL(url);
+    //     
+    //     console.log('📥 Sticker downloaded!');
+    // };
     
     return (
         <div className="sticker-generator-page">
@@ -264,7 +331,7 @@ function StickerGenerator({ onProjectAdded }) {
                     transition={{ delay: 0.2 }}
                 >
                     <form onSubmit={handleSubmit} className="project-form">
-                        <h2>🪴 Plant details</h2>
+                        <h2 className="section-title">🪴 Plant details</h2>
                         
                         {/* Mad Libs Typography-Heavy Section */}
                         <div className="mad-libs-statement">
@@ -400,9 +467,9 @@ function StickerGenerator({ onProjectAdded }) {
                                 type="button"
                                 onClick={generateSticker}
                                 className="preview-button"
-                                disabled={!formData.projectName || !formData.location}
+                                disabled={isGenerating || !formData.projectName || !formData.location}
                             >
-                                🎨 Preview Sticker
+                                {isGenerating ? '⏳ Generating...' : '🎨 Preview Sticker'}
                             </button>
                             
                             <button
@@ -422,24 +489,22 @@ function StickerGenerator({ onProjectAdded }) {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 }}
                 >
-                    <h2>🏷️ Sticker Preview</h2>
+                    <h2 className="section-title">🍊 Sticker Preview</h2>
                     
-                    <div className="sticker-preview" ref={stickerRef}>
-                        {generatedSticker ? (
-                            <Sticker data={generatedSticker} />
+                    <div className="sticker-display">
+                        {stickerSVG ? (
+                            <div 
+                                className="dynamic-sticker-svg"
+                                dangerouslySetInnerHTML={{ __html: stickerSVG }}
+                            />
                         ) : (
                             <div className="sticker-placeholder">
                                 <span className="placeholder-emoji">🍎</span>
-                                <p>Fill in the form to generate your unique fruit sticker!</p>
+                                <p>Fill in the form and click "Preview Sticker" to generate your unique fruit sticker!</p>
+                                <p className="sticker-hint">Choose different adjectives and feelings to see different fruits and shapes!</p>
                             </div>
                         )}
                     </div>
-                    
-                    {generatedSticker && (
-                        <button onClick={downloadSticker} className="download-button">
-                            💾 Download Sticker
-                        </button>
-                    )}
                     
                     {showSuccess && (
                         <motion.div 

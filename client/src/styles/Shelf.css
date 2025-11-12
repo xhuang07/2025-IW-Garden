@@ -141,6 +141,16 @@
     min-height: 12.5rem; /* 200px → 12.5rem */
 }
 
+.shelf-item-sticker .dynamic-sticker {
+    width: 100%;
+    height: auto;
+}
+
+.shelf-item-sticker .dynamic-sticker svg {
+    max-width: 100%;
+    height: auto;
+}
+
 .shelf-item-info {
     flex: 1;
 }
@@ -290,6 +300,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.modal-sticker .dynamic-sticker {
+    width: 100%;
+    max-width: 400px;
+}
+
+.modal-sticker .dynamic-sticker svg {
+    max-width: 100%;
+    height: auto;
 }
 
 .modal-details h2 {
