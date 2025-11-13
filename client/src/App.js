@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react
 import Garden from './pages/Garden';
 import StickerGenerator from './pages/StickerGenerator';
 import Shelf from './pages/Shelf';
+import { API_BASE_URL } from './config';
 import './styles/App.css';
 
 // Navigation component with pixel-art icons matching Figma design
@@ -219,7 +220,7 @@ function App() {
         try {
             console.log('🌐 FETCH: Starting API fetch...');
             setLoading(true);
-            const response = await fetch('http://localhost:5000/api/projects');
+            const response = await fetch(`${API_BASE_URL}/api/projects`);
             const data = await response.json();
             
             console.log('🌐 FETCH: API response:', data);

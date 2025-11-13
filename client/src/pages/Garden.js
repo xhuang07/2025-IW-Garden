@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 import Fruit from '../components/Fruit';
 import FlowerField from '../components/FlowerField';
+import { API_BASE_URL } from '../config';
 import '../styles/Garden.css';
 
 function Garden({ projects, onProjectLiked, onProjectDeleted }) {
@@ -616,7 +617,7 @@ function Garden({ projects, onProjectLiked, onProjectDeleted }) {
         }
         
         try {
-            const response = await fetch(`http://localhost:5000/api/projects/${projectId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/projects/${projectId}`, {
                 method: 'DELETE'
             });
             
@@ -644,7 +645,7 @@ function Garden({ projects, onProjectLiked, onProjectDeleted }) {
     
     const handleSaveProjectLink = async () => {
         try {
-            const response = await fetch(`http://localhost:5000/api/projects/${selectedProject.id}/link`, {
+            const response = await fetch(`${API_BASE_URL}/api/projects/${selectedProject.id}/link`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json'
@@ -682,7 +683,7 @@ function Garden({ projects, onProjectLiked, onProjectDeleted }) {
             const formData = new FormData();
             formData.append('screenshot', file);
             
-            const response = await fetch(`http://localhost:5000/api/projects/${selectedProject.id}/screenshot`, {
+            const response = await fetch(`${API_BASE_URL}/api/projects/${selectedProject.id}/screenshot`, {
                 method: 'PATCH',
                 body: formData
             });
@@ -874,7 +875,7 @@ function Garden({ projects, onProjectLiked, onProjectDeleted }) {
                                 {selectedProject.screenshot ? (
                                     <div className="modal-screenshot">
                                         <img 
-                                            src={`http://localhost:5000${selectedProject.screenshot}`} 
+                                            src={`${API_BASE_URL}${selectedProject.screenshot}`} 
                                             alt={selectedProject.projectName}
                                         />
                                     </div>

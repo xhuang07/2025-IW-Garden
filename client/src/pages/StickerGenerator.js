@@ -11,6 +11,7 @@ import {
     generateStickerSVG, 
     getStickerMetadata 
 } from '../utils/stickerGenerator';
+import { API_BASE_URL } from '../config';
 import '../styles/StickerGenerator.css';
 
 function StickerGenerator({ onProjectAdded }) {
@@ -240,7 +241,7 @@ function StickerGenerator({ onProjectAdded }) {
                 stickerColor: generatedSticker?.color
             });
             
-            const response = await fetch('http://localhost:5000/api/projects', {
+            const response = await fetch(`${API_BASE_URL}/api/projects`, {
                 method: 'POST',
                 body: uploadData
             });

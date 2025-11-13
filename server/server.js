@@ -26,6 +26,12 @@ if (!fs.existsSync(uploadsDir)) {
 // Serve static files from uploads directory
 app.use('/uploads', express.static(uploadsDir));
 
+// Serve static files from React build in production
+if (process.env.NODE_ENV === 'production') {
+    const clientBuildPath = path.join(__dirname, '..', 'client', 'build');
+    app.use(express.static(clientBuildPath));
+}
+
 // Configure multer for file uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -328,8 +334,15 @@ app.patch('/api/projects/:id/screenshot', upload.single('screenshot'), async (re
     }
 });
 
-// 404 handler
-app.use((req, res) => {
+// Serve React app for all non-API routes (must be after API routes)
+if (process.env.NODE_ENV === 'production') {
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html'));
+    });
+}
+
+// 404 handler for API routes
+app.use('/api/*', (req, res) => {
     res.status(404).json({
         success: false,
         message: '🥀 Route not found in the garden'

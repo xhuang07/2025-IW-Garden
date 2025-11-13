@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import Sticker from '../components/Sticker';
 import DynamicSticker from '../components/DynamicSticker';
+import { API_BASE_URL } from '../config';
 import '../styles/Shelf.css';
 
 function Shelf({ projects, onProjectLiked }) {
@@ -287,7 +288,7 @@ function Shelf({ projects, onProjectLiked }) {
                                     {selectedProject.screenshot && (
                                         <div className="modal-screenshot">
                                             <img 
-                                                src={`http://localhost:5000${selectedProject.screenshot}`}
+                                                src={`${API_BASE_URL}${selectedProject.screenshot}`}
                                                 alt={selectedProject.projectName}
                                             />
                                         </div>
